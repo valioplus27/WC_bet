@@ -4,6 +4,11 @@
 // generated one that's guaranteed to match the live schema:
 //
 //   npx supabase gen types typescript --project-id <ref> > src/types/database.ts
+//
+// Shaped to satisfy @supabase/supabase-js's GenericSchema/GenericTable
+// constraints exactly the way `gen types` output does (Relationships on every
+// table; Views/Functions/Enums/CompositeTypes on the schema) — omitting them
+// makes the client fall back to `never` for every row/insert/update type.
 
 export type Database = {
   public: {
@@ -27,6 +32,7 @@ export type Database = {
           is_admin?: boolean
           created_at?: string
         }
+        Relationships: []
       }
       matches: {
         Row: {
@@ -68,6 +74,7 @@ export type Database = {
           status?: string
           updated_at?: string
         }
+        Relationships: []
       }
       standings: {
         Row: {
@@ -115,6 +122,7 @@ export type Database = {
           position?: number | null
           updated_at?: string
         }
+        Relationships: []
       }
       bets: {
         Row: {
@@ -147,6 +155,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       tournament_bets: {
         Row: {
@@ -182,6 +191,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       tournament_config: {
         Row: {
@@ -217,7 +227,12 @@ export type Database = {
           points_top_scorer?: number
           updated_at?: string
         }
+        Relationships: []
       }
     }
+    Views: { [_ in never]: never }
+    Functions: { [_ in never]: never }
+    Enums: { [_ in never]: never }
+    CompositeTypes: { [_ in never]: never }
   }
 }

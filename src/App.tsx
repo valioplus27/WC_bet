@@ -1,16 +1,71 @@
-function App() {
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { AuthProvider, useAuth } from './hooks/useAuth'
+import { FullPageSpinner } from './components/Spinner'
+import { SetNewPassword } from './components/SetNewPassword'
+import Layout from './components/Layout'
+import { RedirectIfAuthed, RequireAdmin, RequireAuth } from './components/RouteGuards'
+import SignIn from './pages/SignIn'
+import Schedule from './pages/Schedule'
+import TournamentBet from './pages/TournamentBet'
+import Standings from './pages/Standings'
+import Leaderboard from './pages/Leaderboard'
+import Admin from './pages/Admin'
+
+export default function App() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-3 px-4 text-center">
-      <h1 className="text-3xl font-bold text-slate-900">WC 2026 Tulosveto</h1>
-      <p className="max-w-md text-slate-600">
-        Private score-betting app for the World Cup — schedule, predictions, standings,
-        and the leaderboard are coming together here next.
-      </p>
-      <p className="rounded-full bg-pitch-50 px-4 py-1 text-sm font-medium text-pitch-700">
-        Project scaffolded · Tailwind wired up · Supabase schema drafted
-      </p>
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 
-export default App
+/**
+ * Gates the whole route tree on session-wide states no per-route guard can
+ * see: the initial session check, and a password-recovery link landing —
+ * which can redirect to any path, so it has to be caught here rather than on
+ * one specific route.
+ */
+function AppRoutes() {
+  const { loading, passwordRecovery } = useAuth()
+
+  if (loading) return <FullPageSpinner />
+  if (passwordRecovery) return <SetNewPassword />
+
+  return (
+    <Routes>
+      <Route
+        path="/sign-in"
+        element={
+          <RedirectIfAuthed>
+            <SignIn />
+          </RedirectIfAuthed>
+        }
+      />
+
+      <Route
+        element={
+          <RequireAuth>
+            <Layout />
+          </RequireAuth>
+        }
+      >
+        <Route index element={<Schedule />} />
+        <Route path="tournament-bet" element={<TournamentBet />} />
+        <Route path="standings" element={<Standings />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
+        <Route
+          path="admin"
+          element={
+            <RequireAdmin>
+              <Admin />
+            </RequireAdmin>
+          }
+        />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}

@@ -18,6 +18,16 @@ type AuthContextValue = {
   passwordRecovery: boolean
   /** Leave recovery mode without changing the password (their recovery session stays valid either way). */
   dismissPasswordRecovery: () => void
+  /**
+   * True for any signed-in user whose profile row says they've never set a
+   * password (profiles.has_password, kept accurate server-side by a trigger on
+   * auth.users — see the profiles_has_password migration). Magic-link sign-ups
+   * start this way; the app walks them through setting one so every account
+   * ends up with one and future sign-ins can skip the email round-trip. There's
+   * no dismiss — it clears itself the instant updateUser({ password }) succeeds
+   * and the refreshed profile comes back with has_password = true.
+   */
+  needsPasswordSetup: boolean
   /** Re-fetch the profile row, e.g. after the user renames themselves. */
   refreshProfile: () => Promise<void>
   signOut: () => Promise<void>
@@ -79,9 +89,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut()
   }
 
+  const needsPasswordSetup = Boolean(session && profile && !profile.has_password)
+
   return (
     <AuthContext.Provider
-      value={{ session, profile, loading, passwordRecovery, dismissPasswordRecovery, refreshProfile, signOut }}
+      value={{
+        session,
+        profile,
+        loading,
+        passwordRecovery,
+        dismissPasswordRecovery,
+        needsPasswordSetup,
+        refreshProfile,
+        signOut,
+      }}
     >
       {children}
     </AuthContext.Provider>

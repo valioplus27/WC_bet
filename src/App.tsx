@@ -23,15 +23,17 @@ export default function App() {
 
 /**
  * Gates the whole route tree on session-wide states no per-route guard can
- * see: the initial session check, and a password-recovery link landing —
- * which can redirect to any path, so it has to be caught here rather than on
- * one specific route.
+ * see: the initial session check, a password-recovery link landing, and a
+ * signed-in user who has never set a password. The first two can redirect to
+ * any path and the third can be true on any page, so all three have to be
+ * caught here rather than on one specific route.
  */
 function AppRoutes() {
-  const { loading, passwordRecovery } = useAuth()
+  const { loading, passwordRecovery, needsPasswordSetup } = useAuth()
 
   if (loading) return <FullPageSpinner />
-  if (passwordRecovery) return <SetNewPassword />
+  if (passwordRecovery) return <SetNewPassword mode="recovery" />
+  if (needsPasswordSetup) return <SetNewPassword mode="setup" />
 
   return (
     <Routes>

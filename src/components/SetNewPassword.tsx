@@ -3,13 +3,42 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { friendlyAuthError } from '../lib/authErrors'
 
+type Mode = 'recovery' | 'setup'
+
+const COPY: Record<Mode, { subtitle: string; intro: string; allowSkip: boolean }> = {
+  recovery: {
+    subtitle: 'Set a password for your account',
+    intro:
+      "You followed a password link, so you're signed in for this session. Choose a password below so you can " +
+      'sign in directly next time — or skip and keep using magic links.',
+    allowSkip: true,
+  },
+  setup: {
+    subtitle: 'One last step — choose a password',
+    intro:
+      "You're signed in via your magic-link email. Set a password now so next time you can sign in directly with " +
+      "your email and password, with nothing to wait on.",
+    allowSkip: false,
+  },
+}
+
 /**
- * Full-screen takeover shown the instant a "set/reset your password" link
- * lands — wherever it redirects to, since the recovery session could land on
- * any route. Lets the user pick a real password before doing anything else.
+ * Full-screen takeover for the two moments the app needs a password before
+ * anything else can happen:
+ *  - "recovery": a "set/reset your password" link landed (could be on any
+ *    route — see useAuth's passwordRecovery). Skippable; their session is
+ *    valid either way.
+ *  - "setup": a signed-in user has never set a password (useAuth's
+ *    needsPasswordSetup, true for fresh magic-link sign-ups). Not skippable —
+ *    this is what makes "every account gets a password" actually hold.
+ * Both converge on the same updateUser call; profiles.has_password (kept
+ * accurate by a database trigger — see the profiles_has_password migration)
+ * flips to true the moment it succeeds, which clears needsPasswordSetup
+ * automatically and lets this overlay close itself without any extra wiring.
  */
-export function SetNewPassword() {
+export function SetNewPassword({ mode }: { mode: Mode }) {
   const { dismissPasswordRecovery } = useAuth()
+  const copy = COPY[mode]
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
@@ -37,7 +66,7 @@ export function SetNewPassword() {
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-slate-900">⚽ WC 2026 Tulosveto</h1>
-          <p className="mt-1 text-sm text-slate-500">Set a password for your account</p>
+          <p className="mt-1 text-sm text-slate-500">{copy.subtitle}</p>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -45,6 +74,13 @@ export function SetNewPassword() {
             <div className="space-y-3 text-center">
               <p className="text-lg font-semibold text-slate-900">Password saved ✓</p>
               <p className="text-sm text-slate-600">You can sign in with your email and this password any time from now on.</p>
+              {/*
+                Always safe to call: in "recovery" mode it's the only thing that
+                clears passwordRecovery (so it must be explicit); in "setup" mode
+                needsPasswordSetup has already cleared itself reactively (the
+                profile refetch picked up has_password = true), so this is just
+                a no-op that gets out of the way.
+              */}
               <button
                 type="button"
                 onClick={dismissPasswordRecovery}
@@ -55,10 +91,7 @@ export function SetNewPassword() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <p className="text-sm text-slate-600">
-                You followed a password link, so you're signed in for this session. Choose a password below so you
-                can sign in directly next time — or skip and keep using magic links.
-              </p>
+              <p className="text-sm text-slate-600">{copy.intro}</p>
               <div>
                 <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700">
                   New password
@@ -103,15 +136,17 @@ export function SetNewPassword() {
               >
                 {status === 'saving' ? 'Saving…' : 'Save password'}
               </button>
-              <p className="text-center text-sm">
-                <button
-                  type="button"
-                  onClick={dismissPasswordRecovery}
-                  className="font-medium text-slate-500 hover:text-slate-700 hover:underline"
-                >
-                  Skip for now
-                </button>
-              </p>
+              {copy.allowSkip && (
+                <p className="text-center text-sm">
+                  <button
+                    type="button"
+                    onClick={dismissPasswordRecovery}
+                    className="font-medium text-slate-500 hover:text-slate-700 hover:underline"
+                  >
+                    Skip for now
+                  </button>
+                </p>
+              )}
             </form>
           )}
         </div>

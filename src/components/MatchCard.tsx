@@ -1,5 +1,7 @@
-import { useId, useState, type FormEvent } from 'react'
-import type { Bet, Match } from '../types/models'
+import { useId, useMemo, useState, type FormEvent } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth'
+import type { Bet, Match, Profile } from '../types/models'
 import { isLocked, stageLabel } from '../types/models'
 import { formatKickoff, matchStatusBadge } from '../lib/format'
 
@@ -66,9 +68,11 @@ type Props = {
   match: Match
   myBet: Bet | null
   onSave: (matchId: number, predictedHome: number, predictedAway: number) => Promise<string | null>
+  /** Full roster, so a locked match can reveal everyone's picks by name (see EveryonesPicks). */
+  profiles: Profile[]
 }
 
-export function MatchCard({ match, myBet, onSave }: Props) {
+export function MatchCard({ match, myBet, onSave, profiles }: Props) {
   const formId = useId()
   const locked = isLocked(match.kickoff_at)
   const [home, setHome] = useState(myBet ? String(myBet.predicted_home) : '')
@@ -150,6 +154,104 @@ export function MatchCard({ match, myBet, onSave }: Props) {
           {feedback.message}
         </p>
       )}
+
+      {locked && <EveryonesPicks matchId={match.id} profiles={profiles} />}
     </article>
+  )
+}
+
+/**
+ * Per-match companion to the leaderboard's per-player breakdown: same
+ * "reveal after lock" data (RLS already returns everyone's bets for a match
+ * once kickoff has passed — see the bets SELECT policy), sliced the other way
+ * round so you can answer "what did everyone guess for *this* game?" without
+ * hunting through each player's row on the leaderboard.
+ *
+ * Fetches lazily — and fresh on every expand, not just the first — so a
+ * result entered by the admin while the panel is closed shows up with correct
+ * points the next time it's opened, without wiring up another realtime
+ * subscription just for an occasionally-opened panel.
+ */
+function EveryonesPicks({ matchId, profiles }: { matchId: number; profiles: Profile[] }) {
+  const { session } = useAuth()
+  const myId = session?.user.id
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [bets, setBets] = useState<Bet[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleToggle() {
+    if (loading) return
+    if (open) {
+      setOpen(false)
+      return
+    }
+    setOpen(true)
+    setLoading(true)
+    setError(null)
+    const { data, error: fetchError } = await supabase.from('bets').select('*').eq('match_id', matchId)
+    setLoading(false)
+    if (fetchError) {
+      setError(fetchError.message)
+      return
+    }
+    setBets(data ?? [])
+  }
+
+  const rows = useMemo(() => {
+    const betByUser = new Map((bets ?? []).map((bet) => [bet.user_id, bet]))
+    return [...profiles]
+      .sort((a, b) => a.display_name.localeCompare(b.display_name))
+      .map((profile) => ({ profile, bet: betByUser.get(profile.id) ?? null }))
+  }, [bets, profiles])
+
+  return (
+    <div className="mt-3">
+      <button
+        type="button"
+        onClick={() => void handleToggle()}
+        disabled={loading}
+        aria-expanded={open}
+        className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-slate-700 disabled:cursor-wait disabled:opacity-60"
+      >
+        {open ? 'Hide' : 'Show'} everyone's picks
+        <span className="text-[10px] font-normal text-slate-300">{open ? '▲' : '▼'}</span>
+      </button>
+
+      {open && (
+        <div className="mt-2 rounded-lg bg-slate-50 p-3">
+          {loading ? (
+            <p className="text-xs text-slate-400">Loading picks…</p>
+          ) : error ? (
+            <p className="text-xs text-red-600">Couldn't load picks: {error}</p>
+          ) : (
+            <ul className="space-y-1.5">
+              {rows.map(({ profile, bet }) => (
+                <li key={profile.id} className="flex items-center justify-between gap-3 text-xs">
+                  <span className="truncate text-slate-600">
+                    {profile.display_name}
+                    {profile.id === myId && (
+                      <span className="ml-1.5 rounded-full bg-pitch-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-pitch-700">
+                        You
+                      </span>
+                    )}
+                  </span>
+                  {bet ? (
+                    <span className="flex shrink-0 items-center gap-2">
+                      <span className="font-semibold tabular-nums text-slate-900">
+                        {bet.predicted_home}–{bet.predicted_away}
+                      </span>
+                      {bet.points_awarded !== null && <PointsPill points={bet.points_awarded} />}
+                    </span>
+                  ) : (
+                    <span className="shrink-0 text-slate-400">no pick</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
   )
 }

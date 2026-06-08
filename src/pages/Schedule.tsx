@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useMatches } from '../hooks/useMatches'
 import { MatchCard } from '../components/MatchCard'
 import { Spinner } from '../components/Spinner'
-import { isLocked, type Bet } from '../types/models'
+import { isLocked, type Bet, type Profile } from '../types/models'
 
 export default function Schedule() {
   const { session } = useAuth()
@@ -12,6 +12,8 @@ export default function Schedule() {
   const { matches, loading: matchesLoading, error: matchesError } = useMatches()
   const [myBets, setMyBets] = useState<Bet[]>([])
   const [betsLoading, setBetsLoading] = useState(true)
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [profilesLoading, setProfilesLoading] = useState(true)
 
   const loadMyBets = useCallback(async () => {
     if (!userId) return
@@ -38,6 +40,25 @@ export default function Schedule() {
       void supabase.removeChannel(channel)
     }
   }, [userId, loadMyBets])
+
+  const loadProfiles = useCallback(async () => {
+    const { data, error } = await supabase.from('profiles').select('*')
+    if (!error) setProfiles(data ?? [])
+    setProfilesLoading(false)
+  }, [])
+
+  // Each MatchCard's "everyone's picks" reveal joins bets to display names,
+  // so it needs the full roster — kept fresh in case someone signs up mid-tournament.
+  useEffect(() => {
+    void loadProfiles()
+    const channel = supabase
+      .channel('schedule-profiles')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => void loadProfiles())
+      .subscribe()
+    return () => {
+      void supabase.removeChannel(channel)
+    }
+  }, [loadProfiles])
 
   const betByMatchId = useMemo(() => {
     const map = new Map<number, Bet>()
@@ -82,7 +103,7 @@ export default function Schedule() {
     [userId],
   )
 
-  if (matchesLoading || betsLoading) return <Spinner label="Loading schedule…" />
+  if (matchesLoading || betsLoading || profilesLoading) return <Spinner label="Loading schedule…" />
 
   if (matchesError) {
     return <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">Couldn't load matches: {matchesError}</p>
@@ -98,6 +119,8 @@ export default function Schedule() {
 
   return (
     <div className="space-y-10">
+      <ScoringLegend />
+
       <section>
         <SectionHeading
           title="Upcoming — place your bets"
@@ -108,7 +131,7 @@ export default function Schedule() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {upcoming.map((match) => (
-              <MatchCard key={match.id} match={match} myBet={betByMatchId.get(match.id) ?? null} onSave={handleSave} />
+              <MatchCard key={match.id} match={match} myBet={betByMatchId.get(match.id) ?? null} onSave={handleSave} profiles={profiles} />
             ))}
           </div>
         )}
@@ -121,11 +144,38 @@ export default function Schedule() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {past.map((match) => (
-              <MatchCard key={match.id} match={match} myBet={betByMatchId.get(match.id) ?? null} onSave={handleSave} />
+              <MatchCard key={match.id} match={match} myBet={betByMatchId.get(match.id) ?? null} onSave={handleSave} profiles={profiles} />
             ))}
           </div>
         )}
       </section>
+    </div>
+  )
+}
+
+function ScoringLegend() {
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-slate-500">
+        <span className="font-semibold text-slate-700">How match points work —</span> nail the exact final score for
+        the most points; get the winner (or draw) right and you still bank something even when the score's off.
+      </p>
+      <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+          <dt className="text-slate-500">Exact score</dt>
+          <dd className="text-base font-semibold text-pitch-700">3 pts</dd>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+          <dt className="text-slate-500">
+            Right outcome <span className="font-normal text-slate-400">— win, draw or loss</span>
+          </dt>
+          <dd className="text-base font-semibold text-amber-700">1 pt</dd>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+          <dt className="text-slate-500">Wrong outcome</dt>
+          <dd className="text-base font-semibold text-slate-400">0 pts</dd>
+        </div>
+      </dl>
     </div>
   )
 }

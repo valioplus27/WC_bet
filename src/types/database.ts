@@ -18,18 +18,21 @@ export type Database = {
           id: string
           display_name: string
           is_admin: boolean
+          has_password: boolean
           created_at: string
         }
         Insert: {
           id: string
           display_name: string
           is_admin?: boolean
+          has_password?: boolean
           created_at?: string
         }
         Update: {
           id?: string
           display_name?: string
           is_admin?: boolean
+          has_password?: boolean
           created_at?: string
         }
         Relationships: []

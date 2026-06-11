@@ -21,12 +21,23 @@
 //   3. Dashboard → Authentication → Hooks → enable "Send Email hook", point it at
 //      this function's URL, and copy the generated secret (looks like
 //      "v1,whsec_…") into `supabase secrets set SEND_EMAIL_HOOK_SECRET=…`
-//   4. Optional: once a sending domain is verified in Resend, set AUTH_EMAIL_FROM
-//      (e.g. "WC 2026 Tulosveto <noreply@yourdomain.com>") — until then Resend's
-//      shared sandbox sender below works for any recipient.
+//   4. Verify a sending domain at resend.com/domains (add the DNS records it
+//      gives you — SPF/DKIM, DMARC recommended), then
+//      `supabase secrets set AUTH_EMAIL_FROM="WC 2026 Tulosveto <noreply@yourdomain.com>"`.
+//      Don't skip this for a group: the sandbox sender below
+//      (onboarding@resend.dev) is allowed to deliver ONLY to the address on
+//      the Resend account itself — every other recipient gets back HTTP 403
+//      validation_error "You can only send testing emails to your own email
+//      address (...). To send emails to other recipients, please verify a
+//      domain…", which this function surfaces as the 502 "Resend rejected
+//      the email (HTTP 403): …" below (Auth then flattens that to its own
+//      generic "Unexpected status code returned from hook: 502"). Until a
+//      domain is verified, only the account owner can ever receive mail —
+//      friends' magic links and password emails will all bounce with that 502.
 //
 // Required secrets: RESEND_API_KEY, SEND_EMAIL_HOOK_SECRET
-// Optional secrets: AUTH_EMAIL_FROM (defaults to Resend's sandbox sender)
+// Optional secret: AUTH_EMAIL_FROM — technically optional (falls back to the
+// sandbox sender, see step 4 on why that's a trap for anything but solo testing)
 // SUPABASE_URL is injected automatically — it's how the verification link is built.
 // ============================================================================
 

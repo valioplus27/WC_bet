@@ -234,7 +234,14 @@ export type Database = {
       }
     }
     Views: { [_ in never]: never }
-    Functions: { [_ in never]: never }
+    Functions: {
+      // Lets the sign-in screen ask "does this email already have an account?"
+      // before sending a magic link — see the email_has_account_lookup migration.
+      email_has_account: {
+        Args: { lookup_email: string }
+        Returns: boolean
+      }
+    }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }
   }

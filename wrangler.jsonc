@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "wcbettest",
+  "name": "wctulosveto",
   "compatibility_date": "2026-06-13",
   "observability": {
     "enabled": true

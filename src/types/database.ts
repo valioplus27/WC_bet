@@ -232,6 +232,45 @@ export type Database = {
         }
         Relationships: []
       }
+      scorers: {
+        Row: {
+          id: number
+          player_ext_id: number
+          player_name: string
+          team_name: string
+          nationality: string | null
+          goals: number
+          assists: number
+          penalties: number
+          played_matches: number
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          player_ext_id: number
+          player_name: string
+          team_name: string
+          nationality?: string | null
+          goals?: number
+          assists?: number
+          penalties?: number
+          played_matches?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          player_ext_id?: number
+          player_name?: string
+          team_name?: string
+          nationality?: string | null
+          goals?: number
+          assists?: number
+          penalties?: number
+          played_matches?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: { [_ in never]: never }
     Functions: {

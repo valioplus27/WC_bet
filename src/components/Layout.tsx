@@ -6,6 +6,7 @@ const navItems = [
   { to: '/tournament-bet', label: 'Tournament bet', end: false },
   { to: '/standings', label: 'Standings', end: false },
   { to: '/leaderboard', label: 'Leaderboard', end: false },
+  { to: '/scorers', label: 'Top Scorers', end: false },
 ]
 
 function navLinkClasses(isActive: boolean) {

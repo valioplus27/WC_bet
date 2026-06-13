@@ -48,6 +48,15 @@ type FootballDataMatch = {
   score?: { fullTime?: { home: number | null; away: number | null } | null } | null
 }
 
+type FootballDataScorer = {
+  player: { id: number; name: string; nationality: string | null }
+  team: { name: string }
+  goals: number
+  assists: number | null
+  penalties: number | null
+  playedMatches: number
+}
+
 type FootballDataStandingRow = {
   position: number
   team: { name: string }
@@ -221,12 +230,41 @@ Deno.serve(async (req) => {
     standingsNote = `standings unavailable (HTTP ${standingsResponse.status})`
   }
 
+  // ---- Scorers -------------------------------------------------------------
+  let scorersSynced = 0
+  let scorersNote: string | null = null
+  const scorersResponse = await fetch(`${FOOTBALL_DATA_BASE_URL}/competitions/${competitionCode}/scorers`, {
+    headers: upstreamHeaders,
+  })
+  if (scorersResponse.ok) {
+    const scorersPayload = (await scorersResponse.json()) as { scorers?: FootballDataScorer[] }
+    const scorerRows = (scorersPayload.scorers ?? []).map((s) => ({
+      player_ext_id: s.player.id,
+      player_name: s.player.name,
+      team_name: s.team.name,
+      nationality: s.player.nationality ?? null,
+      goals: s.goals ?? 0,
+      assists: s.assists ?? 0,
+      penalties: s.penalties ?? 0,
+      played_matches: s.playedMatches ?? 0,
+      updated_at: new Date().toISOString(),
+    }))
+    if (scorerRows.length > 0) {
+      const { error } = await adminClient.from('scorers').upsert(scorerRows, { onConflict: 'player_ext_id' })
+      if (error) return jsonResponse({ error: `Writing scorers failed: ${error.message}` }, 500)
+      scorersSynced = scorerRows.length
+    } else {
+      scorersNote = 'no scorers published yet'
+    }
+  } else {
+    scorersNote = `scorers unavailable (HTTP ${scorersResponse.status})`
+  }
+
   const matchesSynced = matchRows.length
   const summary =
     `Synced ${matchesSynced} match${matchesSynced === 1 ? '' : 'es'}` +
-    (standingsNote
-      ? ` — standings skipped (${standingsNote}).`
-      : ` and ${standingsSynced} standings row${standingsSynced === 1 ? '' : 's'}.`)
+    (standingsNote ? ` — standings skipped (${standingsNote})` : ` and ${standingsSynced} standings row${standingsSynced === 1 ? '' : 's'}`) +
+    (scorersNote ? ` — scorers skipped (${scorersNote}).` : ` and ${scorersSynced} scorer${scorersSynced === 1 ? '' : 's'}.`)
 
-  return jsonResponse({ summary, matchesSynced, standingsSynced, standingsNote })
+  return jsonResponse({ summary, matchesSynced, standingsSynced, scorersSynced, standingsNote, scorersNote })
 })

@@ -10,6 +10,7 @@ import TournamentBet from './pages/TournamentBet'
 import Standings from './pages/Standings'
 import Leaderboard from './pages/Leaderboard'
 import Admin from './pages/Admin'
+import Scorers from './pages/Scorers'
 
 export default function App() {
   return (
@@ -57,6 +58,7 @@ function AppRoutes() {
         <Route path="tournament-bet" element={<TournamentBet />} />
         <Route path="standings" element={<Standings />} />
         <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="scorers" element={<Scorers />} />
         <Route
           path="admin"
           element={

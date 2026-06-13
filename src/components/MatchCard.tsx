@@ -104,7 +104,14 @@ export function MatchCard({ match, myBet, onSave, profiles }: Props) {
           {match.group_name ? ` · ${match.group_name}` : ''}
         </span>
         <div className="flex items-center gap-2">
-          {badge && <span className={`rounded-full px-2 py-0.5 font-medium ${badge.className}`}>{badge.label}</span>}
+          {match.status === 'IN_PLAY' ? (
+            <span className="flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-red-700">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
+              Live
+            </span>
+          ) : badge ? (
+            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge.className}`}>{badge.label}</span>
+          ) : null}
           <time dateTime={match.kickoff_at}>{formatKickoff(match.kickoff_at)}</time>
         </div>
       </header>
@@ -113,9 +120,9 @@ export function MatchCard({ match, myBet, onSave, profiles }: Props) {
         <p className="truncate text-right text-sm font-semibold text-slate-900 sm:text-base">{match.home_team}</p>
 
         {hasResult ? (
-          <div className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 text-lg font-bold tabular-nums text-slate-900">
+          <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-lg font-bold tabular-nums ${match.status === 'IN_PLAY' || match.status === 'PAUSED' ? 'bg-red-50 text-red-900 ring-1 ring-red-200' : 'bg-slate-100 text-slate-900'}`}>
             <span>{match.home_score}</span>
-            <span className="text-slate-400">–</span>
+            <span className={match.status === 'IN_PLAY' || match.status === 'PAUSED' ? 'text-red-300' : 'text-slate-400'}>–</span>
             <span>{match.away_score}</span>
           </div>
         ) : locked ? (

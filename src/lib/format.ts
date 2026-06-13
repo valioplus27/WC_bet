@@ -27,8 +27,9 @@ export function matchStatusBadge(status: string): { label: string; className: st
     case 'FINISHED':
       return { label: 'Final', className: 'bg-slate-100 text-slate-600' }
     case 'IN_PLAY':
-    case 'PAUSED':
       return { label: 'Live', className: 'bg-red-100 text-red-700' }
+    case 'PAUSED':
+      return { label: 'HT', className: 'bg-amber-100 text-amber-700' }
     case 'POSTPONED':
       return { label: 'Postponed', className: 'bg-amber-100 text-amber-700' }
     case 'SUSPENDED':

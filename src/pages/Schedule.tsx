@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useMatches } from '../hooks/useMatches'
 import { MatchCard } from '../components/MatchCard'
 import { Spinner } from '../components/Spinner'
-import { isLocked, type Bet, type Profile } from '../types/models'
+import { isLocked, type Bet, type Profile, type Reaction } from '../types/models'
 
 export default function Schedule() {
   const { session } = useAuth()
@@ -14,6 +14,8 @@ export default function Schedule() {
   const [betsLoading, setBetsLoading] = useState(true)
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [profilesLoading, setProfilesLoading] = useState(true)
+  const [lockedBets, setLockedBets] = useState<Bet[]>([])
+  const [reactions, setReactions] = useState<Reaction[]>([])
 
   const loadMyBets = useCallback(async () => {
     if (!userId) return
@@ -47,8 +49,6 @@ export default function Schedule() {
     setProfilesLoading(false)
   }, [])
 
-  // Each MatchCard's "everyone's picks" reveal joins bets to display names,
-  // so it needs the full roster — kept fresh in case someone signs up mid-tournament.
   useEffect(() => {
     void loadProfiles()
     const channel = supabase
@@ -60,11 +60,53 @@ export default function Schedule() {
     }
   }, [loadProfiles])
 
+  // Bulk-load bets + reactions for all locked matches (RLS reveals them post-kickoff).
+  // This drives the per-card pick distribution bar without N+1 fetches.
+  const loadLockedData = useCallback(async () => {
+    const lockedIds = matches.filter((m) => isLocked(m.kickoff_at)).map((m) => m.id)
+    if (lockedIds.length === 0) return
+    const [betsRes, reactionsRes] = await Promise.all([
+      supabase.from('bets').select('*').in('match_id', lockedIds),
+      supabase.from('reactions').select('*').in('match_id', lockedIds),
+    ])
+    if (!betsRes.error) setLockedBets(betsRes.data ?? [])
+    if (!reactionsRes.error) setReactions(reactionsRes.data ?? [])
+  }, [matches])
+
+  useEffect(() => {
+    void loadLockedData()
+    const channel = supabase
+      .channel('schedule-locked-data')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reactions' }, () => void loadLockedData())
+      .subscribe()
+    return () => { void supabase.removeChannel(channel) }
+  }, [loadLockedData])
+
   const betByMatchId = useMemo(() => {
     const map = new Map<number, Bet>()
     for (const bet of myBets) map.set(bet.match_id, bet)
     return map
   }, [myBets])
+
+  const lockedBetsByMatch = useMemo(() => {
+    const map = new Map<number, Bet[]>()
+    for (const bet of lockedBets) {
+      const list = map.get(bet.match_id) ?? []
+      list.push(bet)
+      map.set(bet.match_id, list)
+    }
+    return map
+  }, [lockedBets])
+
+  const reactionsByMatch = useMemo(() => {
+    const map = new Map<number, Reaction[]>()
+    for (const r of reactions) {
+      const list = map.get(r.match_id) ?? []
+      list.push(r)
+      map.set(r.match_id, list)
+    }
+    return map
+  }, [reactions])
 
   const { upcoming, past } = useMemo(() => {
     const upcoming = matches.filter((match) => !isLocked(match.kickoff_at))
@@ -103,6 +145,20 @@ export default function Schedule() {
     [userId],
   )
 
+  const onReactionToggle = useCallback(
+    async (matchId: number, emoji: string) => {
+      if (!userId) return
+      const existing = reactions.find((r) => r.match_id === matchId && r.user_id === userId)
+      if (existing?.emoji === emoji) {
+        await supabase.from('reactions').delete().eq('user_id', userId).eq('match_id', matchId)
+      } else {
+        await supabase.from('reactions').upsert({ user_id: userId, match_id: matchId, emoji })
+      }
+      void loadLockedData()
+    },
+    [userId, reactions, loadLockedData],
+  )
+
   if (matchesLoading || betsLoading || profilesLoading) return <Spinner label="Loading schedule…" />
 
   if (matchesError) {
@@ -131,7 +187,7 @@ export default function Schedule() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {upcoming.map((match) => (
-              <MatchCard key={match.id} match={match} myBet={betByMatchId.get(match.id) ?? null} onSave={handleSave} profiles={profiles} />
+              <MatchCard key={match.id} match={match} myBet={betByMatchId.get(match.id) ?? null} onSave={handleSave} profiles={profiles} allBetsForMatch={[]} reactions={[]} myUserId={userId} onReactionToggle={onReactionToggle} />
             ))}
           </div>
         )}
@@ -144,7 +200,17 @@ export default function Schedule() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {past.map((match) => (
-              <MatchCard key={match.id} match={match} myBet={betByMatchId.get(match.id) ?? null} onSave={handleSave} profiles={profiles} />
+              <MatchCard
+                key={match.id}
+                match={match}
+                myBet={betByMatchId.get(match.id) ?? null}
+                onSave={handleSave}
+                profiles={profiles}
+                allBetsForMatch={lockedBetsByMatch.get(match.id) ?? []}
+                reactions={reactionsByMatch.get(match.id) ?? []}
+                myUserId={userId}
+                onReactionToggle={onReactionToggle}
+              />
             ))}
           </div>
         )}

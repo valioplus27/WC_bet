@@ -1,19 +1,22 @@
 // ============================================================================
 // auto-sync-fixtures — called by pg_cron every minute.
 //
-// Smart polling: first checks whether any match is currently live or starting
-// within 90 minutes. If not, returns immediately without touching
-// football-data.org (zero API quota used between match days).
+// Smart polling: skips football-data.org entirely when nothing needs updating.
+// Activates when any match:
+//   • is currently live (IN_PLAY / PAUSED), or
+//   • starts within the next 90 minutes (SCHEDULED), or
+//   • is still SCHEDULED but kickoff already passed — stale data that needs
+//     correcting. One sync tick flips it to FINISHED then syncs standings.
 //
 // When active:
 //   • Always syncs match scores (detects goals as they happen)
-//   • Syncs standings + top scorers when a recently-started match just finished
-//     (kickoff within the last 4 hours, status now FINISHED)
+//   • Also syncs standings + top scorers whenever any FINISHED match exists
+//     (not capped to a recent window, so stale data always gets fixed on the
+//     first cron tick of the next match day)
 //
-// No user auth — pg_cron can't generate JWTs. The function is harmless to
-// call externally: the smart-skip means it only touches the external API when
-// matches are genuinely live, so even a flood of spurious calls wastes at
-// most one cheap DB read per call.
+// No user auth — pg_cron can't generate JWTs. The function is safe to call
+// externally: the smart-skip means it only touches the external API during
+// active periods, so spurious calls waste at most one cheap DB read.
 // ============================================================================
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -142,21 +145,34 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405)
 
+  const body: { force?: boolean } = await req.json().catch(() => ({}))
+  const force = body?.force === true
+
   const db = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
   const now = new Date()
   const in90min = new Date(now.getTime() + 90 * 60 * 1000)
 
-  // Smart skip: only proceed if a match is live or starting within 90 minutes.
-  const { count } = await db
-    .from('matches')
-    .select('id', { count: 'exact', head: true })
-    .or(
-      `status.in.(IN_PLAY,PAUSED),` +
-      `and(status.eq.SCHEDULED,kickoff_at.gte.${now.toISOString()},kickoff_at.lte.${in90min.toISOString()})`,
-    )
+  if (!force) {
+    // Smart skip: only call football-data.org if there's something to update.
+    //   1. A match is live right now (IN_PLAY / PAUSED)
+    //   2. A match kicks off within the next 90 minutes (pre-heat)
+    //   3. A match is still SCHEDULED/TIMED but kickoff already passed — stale
+    //      data that needs correcting. One sync tick flips it to FINISHED
+    //      and then syncs standings automatically.
+    //   4. Table completely empty → initial population needed.
+    const { count: activeCount } = await db
+      .from('matches')
+      .select('id', { count: 'exact', head: true })
+      .or(
+        `status.in.(IN_PLAY,PAUSED),` +
+        `and(status.in.(SCHEDULED,TIMED),kickoff_at.gte.${now.toISOString()},kickoff_at.lte.${in90min.toISOString()}),` +
+        `and(status.in.(SCHEDULED,TIMED),kickoff_at.lt.${now.toISOString()})`,
+      )
 
-  if (!count) {
-    return json({ skipped: true, reason: 'No live or imminent matches' })
+    if (!activeCount) {
+      const { count: totalCount } = await db.from('matches').select('id', { count: 'exact', head: true })
+      if (totalCount) return json({ skipped: true, reason: 'Nothing to sync' })
+    }
   }
 
   const headers = { 'X-Auth-Token': API_KEY }
@@ -174,18 +190,15 @@ Deno.serve(async (req) => {
     if (error) return json({ error: `match upsert: ${error.message}` }, 500)
   }
 
-  // ---- Sync standings + scorers when a match recently finished --------------
-  // "Recently" = kickoff was within the last 4 hours and status is now FINISHED
-  // (covers 90-min matches, extra time, and penalty shootouts with room to spare).
-  const cutoff = new Date(now.getTime() - 4 * 60 * 60 * 1000)
-  const hasRecentlyFinished = matches.some(
-    (m) => m.status === 'FINISHED' && new Date(m.utcDate) >= cutoff,
-  )
+  // ---- Sync standings + scorers on any match day (not just right after finish)
+  // Running 3 API calls/min during active periods is still well within the
+  // 10 req/min free-tier limit, and ensures standings never lag behind.
+  const hasAnyFinished = matches.some((m) => m.status === 'FINISHED')
 
   let standingsSynced = 0
   let scorersSynced = 0
 
-  if (hasRecentlyFinished) {
+  if (hasAnyFinished) {
     const [standRes, scorerRes] = await Promise.all([
       fetch(`${BASE_URL}/competitions/${COMPETITION}/standings`, { headers }),
       fetch(`${BASE_URL}/competitions/${COMPETITION}/scorers`, { headers }),

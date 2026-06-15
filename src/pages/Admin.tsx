@@ -46,16 +46,23 @@ function SyncSection() {
 
   async function handleSync() {
     setState({ kind: 'loading' })
-    const { data, error } = await supabase.functions.invoke('sync-fixtures', { method: 'POST' })
-    if (error) {
-      setState({ kind: 'error', message: error.message })
-      return
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auto-sync-fixtures`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ force: true }) },
+      )
+      const data = (await res.json()) as { matchesSynced?: number; standingsSynced?: number; scorersSynced?: number; error?: string }
+      if (!res.ok) {
+        setState({ kind: 'error', message: data.error ?? `HTTP ${res.status}` })
+        return
+      }
+      setState({
+        kind: 'ok',
+        message: `Synced ${data.matchesSynced ?? 0} matches, ${data.standingsSynced ?? 0} standings rows, ${data.scorersSynced ?? 0} scorers.`,
+      })
+    } catch (err) {
+      setState({ kind: 'error', message: err instanceof Error ? err.message : 'Unknown error' })
     }
-    const summary =
-      data && typeof data === 'object' && 'summary' in data && typeof (data as { summary?: unknown }).summary === 'string'
-        ? (data as { summary: string }).summary
-        : 'Sync completed.'
-    setState({ kind: 'ok', message: summary })
   }
 
   return (

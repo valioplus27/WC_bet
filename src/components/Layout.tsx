@@ -7,6 +7,7 @@ const navItems = [
   { to: '/standings', label: 'Standings', end: false },
   { to: '/leaderboard', label: 'Leaderboard', end: false },
   { to: '/scorers', label: 'Top Scorers', end: false },
+  { to: '/stats', label: 'Analytics', end: false },
 ]
 
 function navLinkClasses(isActive: boolean) {

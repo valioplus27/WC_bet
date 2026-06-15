@@ -1,9 +1,12 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
-import type { Bet, Match, Profile } from '../types/models'
+import type { Bet, Match, Profile, Reaction } from '../types/models'
 import { isLocked, stageLabel } from '../types/models'
 import { formatKickoff, matchStatusBadge } from '../lib/format'
+import { PickBar, EMOJIS } from '../pages/Stats'
+
+const REACTION_EMOJIS = EMOJIS
 
 function statusBadge(match: Match, locked: boolean): { label: string; className: string } | null {
   return matchStatusBadge(match.status) ?? (locked ? { label: 'Awaiting kickoff sync', className: 'bg-slate-100 text-slate-500' } : null)
@@ -64,15 +67,91 @@ function BetSummary({ bet, match }: { bet: Bet | null; match: Match }) {
   )
 }
 
+// Pick distribution bar computed from pre-loaded bets
+function PickDistribution({ bets }: { bets: Bet[] }) {
+  if (bets.length === 0) return null
+
+  let home = 0, draw = 0, away = 0
+  for (const b of bets) {
+    if (b.predicted_home > b.predicted_away) home++
+    else if (b.predicted_home === b.predicted_away) draw++
+    else away++
+  }
+  const total = bets.length
+  const homePct = Math.round((home / total) * 100)
+  const drawPct = Math.round((draw / total) * 100)
+  const awayPct = 100 - homePct - drawPct
+
+  return (
+    <div className="mt-3 space-y-1.5 border-t border-slate-100 pt-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Pick split — {total} player{total === 1 ? '' : 's'}</p>
+      <PickBar homePct={homePct} drawPct={drawPct} awayPct={awayPct} />
+      <div className="flex justify-between text-[10px] text-slate-400">
+        <span className="text-blue-500">🏠 {homePct}%</span>
+        <span>🤝 {drawPct}%</span>
+        <span className="text-orange-400">✈️ {awayPct}%</span>
+      </div>
+    </div>
+  )
+}
+
+// Emoji reactions row
+function EmojiReactions({
+  matchId,
+  reactions,
+  myUserId,
+  onToggle,
+}: {
+  matchId: number
+  reactions: Reaction[]
+  myUserId: string | undefined
+  onToggle: (matchId: number, emoji: string) => void
+}) {
+  const counts = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const r of reactions) map.set(r.emoji, (map.get(r.emoji) ?? 0) + 1)
+    return map
+  }, [reactions])
+
+  const myEmoji = reactions.find((r) => r.user_id === myUserId)?.emoji
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-3">
+      {REACTION_EMOJIS.map((emoji) => {
+        const count = counts.get(emoji) ?? 0
+        const isMe = myEmoji === emoji
+        return (
+          <button
+            key={emoji}
+            type="button"
+            onClick={() => onToggle(matchId, emoji)}
+            className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm transition ${
+              isMe
+                ? 'border-pitch-300 bg-pitch-50 text-pitch-700'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+            }`}
+          >
+            {emoji}
+            {count > 0 && <span className="text-xs font-semibold tabular-nums">{count}</span>}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 type Props = {
   match: Match
   myBet: Bet | null
   onSave: (matchId: number, predictedHome: number, predictedAway: number) => Promise<string | null>
-  /** Full roster, so a locked match can reveal everyone's picks by name (see EveryonesPicks). */
   profiles: Profile[]
+  allBetsForMatch: Bet[]
+  reactions: Reaction[]
+  myUserId: string | undefined
+  onReactionToggle: (matchId: number, emoji: string) => void
 }
 
-export function MatchCard({ match, myBet, onSave, profiles }: Props) {
+export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, reactions, myUserId, onReactionToggle }: Props) {
   const formId = useId()
   const locked = isLocked(match.kickoff_at)
   const [home, setHome] = useState(myBet ? String(myBet.predicted_home) : '')
@@ -162,22 +241,21 @@ export function MatchCard({ match, myBet, onSave, profiles }: Props) {
         </p>
       )}
 
-      {locked && <EveryonesPicks matchId={match.id} profiles={profiles} />}
+      {locked && (
+        <>
+          <PickDistribution bets={allBetsForMatch} />
+          <EmojiReactions matchId={match.id} reactions={reactions} myUserId={myUserId} onToggle={onReactionToggle} />
+          <EveryonesPicks matchId={match.id} profiles={profiles} />
+        </>
+      )}
     </article>
   )
 }
 
 /**
- * Per-match companion to the leaderboard's per-player breakdown: same
- * "reveal after lock" data (RLS already returns everyone's bets for a match
- * once kickoff has passed — see the bets SELECT policy), sliced the other way
- * round so you can answer "what did everyone guess for *this* game?" without
- * hunting through each player's row on the leaderboard.
- *
- * Fetches lazily — and fresh on every expand, not just the first — so a
- * result entered by the admin while the panel is closed shows up with correct
- * points the next time it's opened, without wiring up another realtime
- * subscription just for an occasionally-opened panel.
+ * Per-match companion to the leaderboard's per-player breakdown — shows
+ * everyone's predicted score for this match, revealed after kickoff.
+ * Fetches lazily on expand so stale panels pick up admin corrections.
  */
 function EveryonesPicks({ matchId, profiles }: { matchId: number; profiles: Profile[] }) {
   const { session } = useAuth()
@@ -189,19 +267,13 @@ function EveryonesPicks({ matchId, profiles }: { matchId: number; profiles: Prof
 
   async function handleToggle() {
     if (loading) return
-    if (open) {
-      setOpen(false)
-      return
-    }
+    if (open) { setOpen(false); return }
     setOpen(true)
     setLoading(true)
     setError(null)
     const { data, error: fetchError } = await supabase.from('bets').select('*').eq('match_id', matchId)
     setLoading(false)
-    if (fetchError) {
-      setError(fetchError.message)
-      return
-    }
+    if (fetchError) { setError(fetchError.message); return }
     setBets(data ?? [])
   }
 
@@ -219,10 +291,10 @@ function EveryonesPicks({ matchId, profiles }: { matchId: number; profiles: Prof
         onClick={() => void handleToggle()}
         disabled={loading}
         aria-expanded={open}
-        className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 transition hover:text-slate-700 disabled:cursor-wait disabled:opacity-60"
+        className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 transition hover:text-slate-600 disabled:cursor-wait disabled:opacity-60"
       >
         {open ? 'Hide' : 'Show'} everyone's picks
-        <span className="text-[10px] font-normal text-slate-300">{open ? '▲' : '▼'}</span>
+        <span className="text-[10px] font-normal">{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (

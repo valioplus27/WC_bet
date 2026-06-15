@@ -11,6 +11,7 @@ import Standings from './pages/Standings'
 import Leaderboard from './pages/Leaderboard'
 import Admin from './pages/Admin'
 import Scorers from './pages/Scorers'
+import Stats from './pages/Stats'
 
 export default function App() {
   return (
@@ -59,6 +60,7 @@ function AppRoutes() {
         <Route path="standings" element={<Standings />} />
         <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="scorers" element={<Scorers />} />
+        <Route path="stats" element={<Stats />} />
         <Route
           path="admin"
           element={

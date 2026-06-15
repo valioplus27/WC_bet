@@ -271,6 +271,27 @@ export type Database = {
         }
         Relationships: []
       }
+      reactions: {
+        Row: {
+          user_id: string
+          match_id: number
+          emoji: string
+          created_at: string
+        }
+        Insert: {
+          user_id: string
+          match_id: number
+          emoji: string
+          created_at?: string
+        }
+        Update: {
+          user_id?: string
+          match_id?: number
+          emoji?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: { [_ in never]: never }
     Functions: {

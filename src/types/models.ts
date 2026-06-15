@@ -1,6 +1,7 @@
 import type { Database } from './database'
 
 export type Profile = Database['public']['Tables']['profiles']['Row']
+export type Reaction = Database['public']['Tables']['reactions']['Row']
 export type Scorer = Database['public']['Tables']['scorers']['Row']
 export type Match = Database['public']['Tables']['matches']['Row']
 export type Standing = Database['public']['Tables']['standings']['Row']

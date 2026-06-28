@@ -1,10 +1,11 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
-import type { Bet, Match, Profile, Reaction } from '../types/models'
+import type { Bet, Match, Profile, Reaction, Standing } from '../types/models'
 import { isLocked, stageLabel } from '../types/models'
 import { formatKickoff, matchStatusBadge } from '../lib/format'
 import { PickBar, EMOJIS } from '../pages/Stats'
+import { MatchPreview, type FormResult } from './MatchPreview'
 
 const REACTION_EMOJIS = EMOJIS
 
@@ -149,9 +150,14 @@ type Props = {
   reactions: Reaction[]
   myUserId: string | undefined
   onReactionToggle: (matchId: number, emoji: string) => void
+  homeForm: FormResult[]
+  awayForm: FormResult[]
+  homeStanding: Standing | undefined
+  awayStanding: Standing | undefined
+  previousMeeting: Match | undefined
 }
 
-export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, reactions, myUserId, onReactionToggle }: Props) {
+export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, reactions, myUserId, onReactionToggle, homeForm, awayForm, homeStanding, awayStanding, previousMeeting }: Props) {
   const formId = useId()
   const locked = isLocked(match.kickoff_at)
   const [home, setHome] = useState(myBet ? String(myBet.predicted_home) : '')
@@ -239,6 +245,17 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
         <p className={`mt-2 text-xs ${feedback.kind === 'error' ? 'text-red-600' : 'text-pitch-700'}`} role="status">
           {feedback.message}
         </p>
+      )}
+
+      {!locked && (
+        <MatchPreview
+          match={match}
+          homeForm={homeForm}
+          awayForm={awayForm}
+          homeStanding={homeStanding}
+          awayStanding={awayStanding}
+          previousMeeting={previousMeeting}
+        />
       )}
 
       {locked && (

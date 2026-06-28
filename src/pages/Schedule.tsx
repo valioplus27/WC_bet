@@ -4,7 +4,8 @@ import { useAuth } from '../hooks/useAuth'
 import { useMatches } from '../hooks/useMatches'
 import { MatchCard } from '../components/MatchCard'
 import { Spinner } from '../components/Spinner'
-import { isLocked, type Bet, type Profile, type Reaction } from '../types/models'
+import { isLocked, type Bet, type Profile, type Reaction, type Standing } from '../types/models'
+import type { FormResult } from '../components/MatchPreview'
 
 export default function Schedule() {
   const { session } = useAuth()
@@ -16,6 +17,7 @@ export default function Schedule() {
   const [profilesLoading, setProfilesLoading] = useState(true)
   const [lockedBets, setLockedBets] = useState<Bet[]>([])
   const [reactions, setReactions] = useState<Reaction[]>([])
+  const [standings, setStandings] = useState<Standing[]>([])
 
   const loadMyBets = useCallback(async () => {
     if (!userId) return
@@ -82,6 +84,65 @@ export default function Schedule() {
     return () => { void supabase.removeChannel(channel) }
   }, [loadLockedData])
 
+  // Standings — used by the pre-match preview to show group positions
+  useEffect(() => {
+    supabase.from('standings').select('*').then(({ data }) => setStandings(data ?? []))
+    const channel = supabase
+      .channel('schedule-standings')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'standings' }, () => {
+        supabase.from('standings').select('*').then(({ data }) => setStandings(data ?? []))
+      })
+      .subscribe()
+    return () => { void supabase.removeChannel(channel) }
+  }, [])
+
+  // Team form: last 5 completed WC matches per team, most recent first
+  const teamFormMap = useMemo(() => {
+    const map = new Map<string, FormResult[]>()
+    const finished = matches
+      .filter((m) => m.status === 'FINISHED' && m.home_score !== null && m.away_score !== null)
+      .sort((a, b) => new Date(b.kickoff_at).getTime() - new Date(a.kickoff_at).getTime())
+
+    for (const m of finished) {
+      const hs = m.home_score!
+      const as_ = m.away_score!
+
+      const homeResult: 'W' | 'D' | 'L' = hs > as_ ? 'W' : hs === as_ ? 'D' : 'L'
+      const awayResult: 'W' | 'D' | 'L' = as_ > hs ? 'W' : as_ === hs ? 'D' : 'L'
+
+      const homeForm = map.get(m.home_team) ?? []
+      homeForm.push({ opponent: m.away_team, isHome: true, goalsFor: hs, goalsAgainst: as_, result: homeResult, kickoff_at: m.kickoff_at })
+      map.set(m.home_team, homeForm)
+
+      const awayForm = map.get(m.away_team) ?? []
+      awayForm.push({ opponent: m.home_team, isHome: false, goalsFor: as_, goalsAgainst: hs, result: awayResult, kickoff_at: m.kickoff_at })
+      map.set(m.away_team, awayForm)
+    }
+    // Cap at 5
+    for (const [team, form] of map) map.set(team, form.slice(0, 5))
+    return map
+  }, [matches])
+
+  // Standing lookup by team name
+  const standingsByTeam = useMemo(() => {
+    const map = new Map<string, Standing>()
+    for (const s of standings) map.set(s.team_name, s)
+    return map
+  }, [standings])
+
+  // Previous WC meetings between two teams (already-played matches between them)
+  const previousMeetingMap = useMemo(() => {
+    const finished = matches.filter((m) => m.status === 'FINISHED')
+    const map = new Map<string, typeof finished[0] | undefined>()
+    for (const m of finished) {
+      const key1 = `${m.home_team}|${m.away_team}`
+      const key2 = `${m.away_team}|${m.home_team}`
+      map.set(key1, m)
+      map.set(key2, m)
+    }
+    return map
+  }, [matches])
+
   const betByMatchId = useMemo(() => {
     const map = new Map<number, Bet>()
     for (const bet of myBets) map.set(bet.match_id, bet)
@@ -108,10 +169,19 @@ export default function Schedule() {
     return map
   }, [reactions])
 
-  const { upcoming, past } = useMemo(() => {
+  const { upcoming, pastByDate } = useMemo(() => {
     const upcoming = matches.filter((match) => !isLocked(match.kickoff_at))
-    const past = matches.filter((match) => isLocked(match.kickoff_at)).reverse()
-    return { upcoming, past }
+    const past = matches.filter((match) => isLocked(match.kickoff_at))
+      .sort((a, b) => new Date(b.kickoff_at).getTime() - new Date(a.kickoff_at).getTime())
+    // Group past matches by calendar date (local)
+    const groups = new Map<string, typeof past>()
+    for (const m of past) {
+      const label = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date(m.kickoff_at))
+      const list = groups.get(label) ?? []
+      list.push(m)
+      groups.set(label, list)
+    }
+    return { upcoming, pastByDate: [...groups.entries()] }
   }, [matches])
 
   const handleSave = useCallback(
@@ -187,32 +257,57 @@ export default function Schedule() {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {upcoming.map((match) => (
-              <MatchCard key={match.id} match={match} myBet={betByMatchId.get(match.id) ?? null} onSave={handleSave} profiles={profiles} allBetsForMatch={[]} reactions={[]} myUserId={userId} onReactionToggle={onReactionToggle} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section>
-        <SectionHeading title="Past — locked" hint="Your prediction and points earned, revealed once each match kicks off." />
-        {past.length === 0 ? (
-          <EmptyState>No matches have kicked off yet.</EmptyState>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {past.map((match) => (
               <MatchCard
                 key={match.id}
                 match={match}
                 myBet={betByMatchId.get(match.id) ?? null}
                 onSave={handleSave}
                 profiles={profiles}
-                allBetsForMatch={lockedBetsByMatch.get(match.id) ?? []}
-                reactions={reactionsByMatch.get(match.id) ?? []}
+                allBetsForMatch={[]}
+                reactions={[]}
                 myUserId={userId}
                 onReactionToggle={onReactionToggle}
+                homeForm={teamFormMap.get(match.home_team) ?? []}
+                awayForm={teamFormMap.get(match.away_team) ?? []}
+                homeStanding={standingsByTeam.get(match.home_team)}
+                awayStanding={standingsByTeam.get(match.away_team)}
+                previousMeeting={previousMeetingMap.get(`${match.home_team}|${match.away_team}`)}
               />
             ))}
           </div>
+        )}
+      </section>
+
+      <section className="space-y-6">
+        <SectionHeading title="Past — results" hint="Your prediction and points earned, revealed once each match kicks off." />
+        {pastByDate.length === 0 ? (
+          <EmptyState>No matches have kicked off yet.</EmptyState>
+        ) : (
+          pastByDate.map(([date, dayMatches]) => (
+            <div key={date}>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">{date}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {dayMatches.map((match) => (
+                  <MatchCard
+                    key={match.id}
+                    match={match}
+                    myBet={betByMatchId.get(match.id) ?? null}
+                    onSave={handleSave}
+                    profiles={profiles}
+                    allBetsForMatch={lockedBetsByMatch.get(match.id) ?? []}
+                    reactions={reactionsByMatch.get(match.id) ?? []}
+                    myUserId={userId}
+                    onReactionToggle={onReactionToggle}
+                    homeForm={[]}
+                    awayForm={[]}
+                    homeStanding={undefined}
+                    awayStanding={undefined}
+                    previousMeeting={undefined}
+                  />
+                ))}
+              </div>
+            </div>
+          ))
         )}
       </section>
     </div>

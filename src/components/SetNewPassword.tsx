@@ -37,7 +37,7 @@ const COPY: Record<Mode, { subtitle: string; intro: string; allowSkip: boolean }
  * automatically and lets this overlay close itself without any extra wiring.
  */
 export function SetNewPassword({ mode }: { mode: Mode }) {
-  const { dismissPasswordRecovery } = useAuth()
+  const { dismissPasswordRecovery, signOut } = useAuth()
   const copy = COPY[mode]
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -144,6 +144,17 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
                     className="font-medium text-slate-500 hover:text-slate-700 hover:underline"
                   >
                     Skip for now
+                  </button>
+                </p>
+              )}
+              {!copy.allowSkip && (
+                <p className="text-center text-sm">
+                  <button
+                    type="button"
+                    onClick={() => void signOut()}
+                    className="font-medium text-slate-400 hover:text-slate-600 hover:underline"
+                  >
+                    Sign out instead
                   </button>
                 </p>
               )}

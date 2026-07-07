@@ -82,6 +82,7 @@ function DisplayNameField({ value, onChange, hint }: { value: string; onChange: 
       <input
         id="displayName"
         type="text"
+        required
         maxLength={40}
         autoComplete="nickname"
         value={value}
@@ -154,7 +155,7 @@ function PasswordSignInPanel({ onForgot, onFirstTime }: { onForgot: () => void; 
       <p className="text-center text-sm text-slate-500">
         First time here?{' '}
         <button type="button" onClick={onFirstTime} className="font-medium text-pitch-700 hover:underline">
-          Get a magic link
+          Create an account
         </button>
       </p>
     </form>
@@ -244,8 +245,8 @@ function MagicLinkPanel({ onBack, onForgotPassword }: { onBack: () => void; onFo
       <div className="space-y-3 text-center">
         <p className="text-lg font-semibold text-slate-900">Check your email</p>
         <p className="text-sm text-slate-600">
-          We sent a sign-in link to <span className="font-medium text-slate-900">{email}</span>. Open it on this
-          device to finish signing in — no password needed yet.
+          We sent an account creation link to <span className="font-medium text-slate-900">{email}</span>. Open it on
+          this device to finish creating your account — then you'll choose a password.
         </p>
         <button type="button" onClick={() => setStatus('idle')} className="text-sm font-medium text-pitch-700 hover:underline">
           Use a different email
@@ -257,13 +258,13 @@ function MagicLinkPanel({ onBack, onForgotPassword }: { onBack: () => void; onFo
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <p className="text-sm text-slate-600">
-        New here? Enter your email and we'll send a link that signs you in and creates your account. Right after,
-        you'll choose a password so every sign-in from then on is instant — no more emails to wait on.
+        Fill in your details and we'll email you a one-time link to finish creating your account. Right after,
+        you'll choose a password so every sign-in from then on is instant.
       </p>
       <EmailField value={email} onChange={setEmail} />
       <DisplayNameField value={displayName} onChange={setDisplayName} hint="shown on the leaderboard" />
       <FieldError message={error} />
-      <SubmitButton pending={status === 'sending'} label="Send magic link" pendingLabel="Sending…" />
+      <SubmitButton pending={status === 'sending'} label="Create account" pendingLabel="Sending…" />
       <p className="text-center text-sm">
         <BackLink onClick={onBack}>← Back to sign in</BackLink>
       </p>

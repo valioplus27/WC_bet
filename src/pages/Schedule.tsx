@@ -4,7 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useMatches } from '../hooks/useMatches'
 import { MatchCard } from '../components/MatchCard'
 import { Spinner } from '../components/Spinner'
-import { isLocked, type Bet, type Profile, type Reaction, type Standing } from '../types/models'
+import { isLocked, type Bet, type MatchEventLive, type MatchStats, type Prediction, type Profile, type Reaction, type Standing } from '../types/models'
 import type { FormResult } from '../components/MatchPreview'
 
 export default function Schedule() {
@@ -17,7 +17,10 @@ export default function Schedule() {
   const [profilesLoading, setProfilesLoading] = useState(true)
   const [lockedBets, setLockedBets] = useState<Bet[]>([])
   const [reactions, setReactions] = useState<Reaction[]>([])
+  const [liveEvents, setLiveEvents] = useState<MatchEventLive[]>([])
+  const [matchStats, setMatchStats] = useState<MatchStats[]>([])
   const [standings, setStandings] = useState<Standing[]>([])
+  const [predictions, setPredictions] = useState<Prediction[]>([])
 
   const loadMyBets = useCallback(async () => {
     if (!userId) return
@@ -67,12 +70,16 @@ export default function Schedule() {
   const loadLockedData = useCallback(async () => {
     const lockedIds = matches.filter((m) => isLocked(m.kickoff_at)).map((m) => m.id)
     if (lockedIds.length === 0) return
-    const [betsRes, reactionsRes] = await Promise.all([
+    const [betsRes, reactionsRes, eventsRes, statsRes] = await Promise.all([
       supabase.from('bets').select('*').in('match_id', lockedIds),
       supabase.from('reactions').select('*').in('match_id', lockedIds),
+      supabase.from('match_events_live').select('*').in('match_id', lockedIds),
+      supabase.from('match_stats').select('*').in('match_id', lockedIds),
     ])
     if (!betsRes.error) setLockedBets(betsRes.data ?? [])
     if (!reactionsRes.error) setReactions(reactionsRes.data ?? [])
+    if (!eventsRes.error) setLiveEvents(eventsRes.data ?? [])
+    if (!statsRes.error) setMatchStats(statsRes.data ?? [])
   }, [matches])
 
   useEffect(() => {
@@ -80,9 +87,16 @@ export default function Schedule() {
     const channel = supabase
       .channel('schedule-locked-data')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reactions' }, () => void loadLockedData())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_events_live' }, () => void loadLockedData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'match_stats' }, () => void loadLockedData())
       .subscribe()
     return () => { void supabase.removeChannel(channel) }
   }, [loadLockedData])
+
+  // Load model predictions (only exist for knockout-stage upcoming matches)
+  useEffect(() => {
+    supabase.from('predictions').select('*').then(({ data }) => setPredictions(data ?? []))
+  }, [])
 
   // Standings — used by the pre-match preview to show group positions
   useEffect(() => {
@@ -143,6 +157,12 @@ export default function Schedule() {
     return map
   }, [matches])
 
+  const predictionByMatchId = useMemo(() => {
+    const map = new Map<number, Prediction>()
+    for (const p of predictions) map.set(p.match_id, p)
+    return map
+  }, [predictions])
+
   const betByMatchId = useMemo(() => {
     const map = new Map<number, Bet>()
     for (const bet of myBets) map.set(bet.match_id, bet)
@@ -168,6 +188,22 @@ export default function Schedule() {
     }
     return map
   }, [reactions])
+
+  const liveEventsByMatch = useMemo(() => {
+    const map = new Map<number, MatchEventLive[]>()
+    for (const e of liveEvents) {
+      const list = map.get(e.match_id) ?? []
+      list.push(e)
+      map.set(e.match_id, list)
+    }
+    return map
+  }, [liveEvents])
+
+  const matchStatsByMatch = useMemo(() => {
+    const map = new Map<number, MatchStats>()
+    for (const s of matchStats) map.set(s.match_id, s)
+    return map
+  }, [matchStats])
 
   const { upcoming, pastByDate } = useMemo(() => {
     const upcoming = matches.filter((match) => !isLocked(match.kickoff_at))
@@ -272,6 +308,7 @@ export default function Schedule() {
                 homeStanding={standingsByTeam.get(match.home_team)}
                 awayStanding={standingsByTeam.get(match.away_team)}
                 previousMeeting={previousMeetingMap.get(`${match.home_team}|${match.away_team}`)}
+                prediction={predictionByMatchId.get(match.id)}
               />
             ))}
           </div>
@@ -303,6 +340,8 @@ export default function Schedule() {
                     homeStanding={undefined}
                     awayStanding={undefined}
                     previousMeeting={undefined}
+                    liveEvents={liveEventsByMatch.get(match.id)}
+                    matchStats={matchStatsByMatch.get(match.id) ?? null}
                   />
                 ))}
               </div>

@@ -77,9 +77,9 @@ type HookPayload = {
 
 const ACTION_COPY: Record<string, { subject: string; heading: string; body: string }> = {
   magiclink: {
-    subject: 'Your sign-in link',
-    heading: 'Sign in to WC 2026 Tulosveto',
-    body: 'Click the button below to sign in on this device. The link works once and expires shortly.',
+    subject: 'Create your account',
+    heading: 'Finish creating your account',
+    body: 'Click the button below to confirm your email address and finish creating your account. The link works once and expires shortly.',
   },
   signup: {
     subject: 'Confirm your email',

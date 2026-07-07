@@ -1,11 +1,13 @@
 import { useId, useMemo, useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
-import type { Bet, Match, Profile, Reaction, Standing } from '../types/models'
+import type { Bet, Match, MatchEventLive, MatchStats, Prediction, Profile, Reaction, Standing } from '../types/models'
 import { isLocked, stageLabel } from '../types/models'
 import { formatKickoff, matchStatusBadge } from '../lib/format'
-import { PickBar, EMOJIS } from '../pages/Stats'
+import { PickBar, EMOJIS } from './PickBar'
 import { MatchPreview, type FormResult } from './MatchPreview'
+import { LiveEventFeed } from './LiveEventFeed'
+import { MatchStatsBar } from './MatchStatsBar'
 
 const REACTION_EMOJIS = EMOJIS
 
@@ -141,6 +143,41 @@ function EmojiReactions({
   )
 }
 
+// Lightweight model probability bar — shown on upcoming knockout matches
+function ModelProbBar({ pred, homeTeam, awayTeam }: { pred: Prediction; homeTeam: string; awayTeam: string }) {
+  const hw = Math.round(pred.home_win_prob * 100)
+  const d  = Math.round(pred.draw_prob * 100)
+  const aw = Math.round(pred.away_win_prob * 100)
+  const maxP = Math.max(pred.home_win_prob, pred.draw_prob, pred.away_win_prob)
+  const isToss = maxP < 0.40
+  let label = ''
+  if (!isToss) {
+    if (pred.home_win_prob === maxP) label = `${homeTeam.split(' ')[0]} favoured ${hw}%`
+    else if (pred.away_win_prob === maxP) label = `${awayTeam.split(' ')[0]} favoured ${aw}%`
+    else label = `Draw likely ${d}%`
+  } else {
+    label = 'Evenly matched'
+  }
+  return (
+    <div className="mt-3 space-y-1 border-t border-slate-100 pt-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Model prediction</p>
+        <p className="text-[11px] font-semibold text-slate-600">{label}</p>
+      </div>
+      <div className="flex h-2 overflow-hidden rounded-full">
+        <div style={{ width: `${hw}%` }} className="bg-blue-500" title={`${homeTeam} ${hw}%`} />
+        <div style={{ width: `${d}%` }} className="bg-slate-200" title={`Draw ${d}%`} />
+        <div style={{ width: `${aw}%` }} className="bg-orange-400" title={`${awayTeam} ${aw}%`} />
+      </div>
+      <div className="flex justify-between text-[10px] tabular-nums text-slate-400">
+        <span className="text-blue-600">{hw}%</span>
+        <span>Draw {d}%</span>
+        <span className="text-orange-500">{aw}%</span>
+      </div>
+    </div>
+  )
+}
+
 type Props = {
   match: Match
   myBet: Bet | null
@@ -155,9 +192,12 @@ type Props = {
   homeStanding: Standing | undefined
   awayStanding: Standing | undefined
   previousMeeting: Match | undefined
+  liveEvents?: MatchEventLive[]
+  matchStats?: MatchStats | null
+  prediction?: Prediction
 }
 
-export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, reactions, myUserId, onReactionToggle, homeForm, awayForm, homeStanding, awayStanding, previousMeeting }: Props) {
+export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, reactions, myUserId, onReactionToggle, homeForm, awayForm, homeStanding, awayStanding, previousMeeting, liveEvents, matchStats, prediction }: Props) {
   const formId = useId()
   const locked = isLocked(match.kickoff_at)
   const [home, setHome] = useState(myBet ? String(myBet.predicted_home) : '')
@@ -247,6 +287,10 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
         </p>
       )}
 
+      {!locked && prediction && (
+        <ModelProbBar pred={prediction} homeTeam={match.home_team} awayTeam={match.away_team} />
+      )}
+
       {!locked && (
         <MatchPreview
           match={match}
@@ -260,6 +304,12 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
 
       {locked && (
         <>
+          {liveEvents && liveEvents.length > 0 && (
+            <LiveEventFeed events={liveEvents} homeTeam={match.home_team} />
+          )}
+          {matchStats && (
+            <MatchStatsBar stats={matchStats} homeTeam={match.home_team} awayTeam={match.away_team} />
+          )}
           <PickDistribution bets={allBetsForMatch} />
           <EmojiReactions matchId={match.id} reactions={reactions} myUserId={myUserId} onToggle={onReactionToggle} />
           <EveryonesPicks matchId={match.id} profiles={profiles} />

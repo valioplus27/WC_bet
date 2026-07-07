@@ -19,9 +19,19 @@ function FeedbackLine({ feedback }: { feedback: Feedback | null }) {
   )
 }
 
+type Tab = { id: string; label: string; icon: string; hint: string }
+
+const TABS: Tab[] = [
+  { id: 'sync', label: 'Sync data', icon: '🔄', hint: 'Pull fixtures, live events, and squads from upstream sources.' },
+  { id: 'analytics', label: 'Predictions & analytics', icon: '📈', hint: 'StatsBomb ingestion, tactical metrics, and the match-prediction model.' },
+  { id: 'results', label: 'Results & settings', icon: '🛠️', hint: 'Hand-correct scores and configure the tournament bet.' },
+]
+
 export default function Admin() {
+  const [tab, setTab] = useState<string>('sync')
+
   return (
-    <div className="mx-auto max-w-4xl space-y-10">
+    <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <h1 className="text-lg font-bold text-slate-900">Admin</h1>
         <p className="text-sm text-slate-500">
@@ -29,9 +39,48 @@ export default function Admin() {
         </p>
       </div>
 
-      <SyncSection />
-      <MatchResultsSection />
-      <TournamentConfigSection />
+      <div className="flex flex-wrap gap-1.5 border-b border-slate-200 pb-px">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            aria-current={tab === t.id ? 'page' : undefined}
+            className={`flex items-center gap-1.5 rounded-t-md border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+              tab === t.id
+                ? 'border-pitch-600 text-pitch-700'
+                : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800'
+            }`}
+          >
+            <span aria-hidden="true">{t.icon}</span>
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <p className="-mt-3 text-xs text-slate-400">{TABS.find((t) => t.id === tab)?.hint}</p>
+
+      {tab === 'sync' && (
+        <div className="space-y-10">
+          <SyncSection />
+          <LiveSyncSection />
+          <SquadSyncSection />
+        </div>
+      )}
+
+      {tab === 'analytics' && (
+        <div className="space-y-10">
+          <StatsBombSection />
+          <TeamAnalyticsSection />
+          <PredictionsSection />
+        </div>
+      )}
+
+      {tab === 'results' && (
+        <div className="space-y-10">
+          <MatchResultsSection />
+          <TournamentConfigSection />
+        </div>
+      )}
     </div>
   )
 }
@@ -92,6 +141,297 @@ function SyncSection() {
             </span>
           </p>
         )}
+      </div>
+    </section>
+  )
+}
+
+// ----------------------------------------------------------------------------
+// Live sync — manually triggers sync-live-events to pull goal scorers,
+// cards, subs, and in-match stats from API-Football. Requires the
+// APIFOOTBALL_API_KEY secret to be set.
+// ----------------------------------------------------------------------------
+function LiveSyncSection() {
+  const [state, setState] = useState<{ kind: 'idle' | 'loading' | 'ok' | 'error'; message?: string }>({ kind: 'idle' })
+
+  async function handleSync() {
+    setState({ kind: 'loading' })
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-live-events`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' },
+      )
+      const data = (await res.json()) as {
+        skipped?: boolean; reason?: string; candidates?: number; live?: number
+        synced?: number; throttled?: number; resolved?: number; error?: string; hint?: string
+      }
+      if (!res.ok) {
+        setState({ kind: 'error', message: data.error ?? `HTTP ${res.status}` + (data.hint ? ` — ${data.hint}` : '') })
+        return
+      }
+      if (data.skipped) {
+        setState({ kind: 'ok', message: `Skipped — ${data.reason ?? 'no live matches'}` })
+      } else {
+        setState({
+          kind: 'ok',
+          message: `Synced ${data.synced ?? 0} live matches (${data.throttled ?? 0} throttled, ${data.resolved ?? 0} IDs resolved). ${data.candidates ?? 0} candidates found.`,
+        })
+      }
+    } catch (err) {
+      setState({ kind: 'error', message: err instanceof Error ? err.message : 'Unknown error' })
+    }
+  }
+
+  return (
+    <section className="space-y-3">
+      <h2 className="text-base font-semibold text-slate-900">Live match data (API-Football)</h2>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p className="text-sm text-slate-500">
+          Pulls goal scorers, cards, substitutions, possession, shots, and corners for currently live matches from
+          API-Football. Runs automatically every 2 min via pg_cron (skips if no match is live). Requires{' '}
+          <code className="rounded bg-slate-100 px-1 text-xs">APIFOOTBALL_API_KEY</code> to be set as a Supabase secret.
+          Free tier: 100 calls/day.
+        </p>
+        <button
+          type="button"
+          onClick={() => void handleSync()}
+          disabled={state.kind === 'loading'}
+          className="mt-4 rounded-md bg-pitch-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pitch-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {state.kind === 'loading' ? 'Syncing…' : 'Sync now'}
+        </button>
+        {state.kind === 'ok' && <p className="mt-3 text-sm text-pitch-700">✓ {state.message}</p>}
+        {state.kind === 'error' && <p className="mt-3 text-sm text-red-600">{state.message}</p>}
+      </div>
+    </section>
+  )
+}
+
+// ----------------------------------------------------------------------------
+// Predictions — runs the Poisson model over all upcoming knockout matches and
+// resolves Brier/log-loss for any that have since finished.
+// ----------------------------------------------------------------------------
+function PredictionsSection() {
+  const [state, setState] = useState<{ kind: 'idle' | 'loading' | 'ok' | 'error'; message?: string }>({ kind: 'idle' })
+
+  async function handlePredict() {
+    setState({ kind: 'loading' })
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/compute-predictions`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' },
+      )
+      const data = (await res.json()) as {
+        computed?: number; resolved?: number; teams?: number; leagueAvgGoals?: string
+        calibration?: { applied: boolean; temperature: number | null; samples: number; minRequired: number }
+        error?: string
+      }
+      if (!res.ok) { setState({ kind: 'error', message: data.error ?? `HTTP ${res.status}` }); return }
+      const cal = data.calibration
+      const calNote = cal
+        ? cal.applied
+          ? ` · Temperature scaling T=${cal.temperature} (${cal.samples} resolved)`
+          : ` · Uncalibrated (need ${cal.minRequired - (cal.samples ?? 0)} more resolved predictions)`
+        : ''
+      setState({
+        kind: 'ok',
+        message: `Computed ${data.computed ?? 0} predictions, resolved ${data.resolved ?? 0}. ${data.teams ?? 0} teams rated, avg ${data.leagueAvgGoals ?? '—'} goals/team/game.${calNote}`,
+      })
+    } catch (err) {
+      setState({ kind: 'error', message: err instanceof Error ? err.message : 'Unknown error' })
+    }
+  }
+
+  return (
+    <section className="space-y-3">
+      <h2 className="text-base font-semibold text-slate-900">Match predictions</h2>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p className="text-sm text-slate-500">
+          Runs the Poisson model (Dixon-Coles correction) on group-stage results to generate win/draw/loss
+          probabilities for each upcoming knockout match. Also scores any predictions whose match just finished
+          (computes Brier score and log-loss). Visible on the Bracket page.
+        </p>
+        <button
+          type="button"
+          onClick={() => void handlePredict()}
+          disabled={state.kind === 'loading'}
+          className="mt-4 rounded-md bg-pitch-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pitch-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {state.kind === 'loading' ? 'Computing…' : 'Run predictions'}
+        </button>
+        {state.kind === 'ok' && <p className="mt-3 text-sm text-pitch-700">✓ {state.message}</p>}
+        {state.kind === 'error' && <p className="mt-3 text-sm text-red-600">{state.message}</p>}
+      </div>
+    </section>
+  )
+}
+
+// ----------------------------------------------------------------------------
+// StatsBomb — batch-ingests WC 2022 event data (shots + passes) from
+// StatsBomb's open-data GitHub repo. Used to populate the shots and
+// match_events tables for historical analytics. Run in batches of 3 matches
+// at a time to stay within the edge function's 60 s timeout.
+// ----------------------------------------------------------------------------
+function StatsBombSection() {
+  const [state, setState] = useState<{
+    kind: 'idle' | 'loading' | 'ok' | 'error'
+    message?: string
+    offset: number
+    total: number | null
+    hasMore: boolean
+  }>({ kind: 'idle', offset: 0, total: null, hasMore: true })
+
+  async function handleIngest() {
+    setState((s) => ({ ...s, kind: 'loading' }))
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ingest-statsbomb`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ limit: 3, offset: state.offset, competition: 0 }),
+        },
+      )
+      const data = (await res.json()) as {
+        competition?: string; totalMatches?: number; shotsIngested?: number
+        eventsIngested?: number; skipped?: number; hasMore?: boolean; nextOffset?: number; error?: string
+      }
+      if (!res.ok) { setState((s) => ({ ...s, kind: 'error', message: data.error ?? `HTTP ${res.status}` })); return }
+      setState({
+        kind: 'ok',
+        offset: data.nextOffset ?? state.offset,
+        total: data.totalMatches ?? state.total,
+        hasMore: data.hasMore ?? false,
+        message: `Batch done: ${data.shotsIngested ?? 0} shots, ${data.eventsIngested ?? 0} pass events ingested (${data.skipped ?? 0} skipped — already loaded).`,
+      })
+    } catch (err) {
+      setState((s) => ({ ...s, kind: 'error', message: err instanceof Error ? err.message : 'Unknown error' }))
+    }
+  }
+
+  const progress = state.total ? `${state.offset} / ${state.total} matches` : null
+
+  return (
+    <section className="space-y-3">
+      <h2 className="text-base font-semibold text-slate-900">StatsBomb open data (WC 2022)</h2>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p className="text-sm text-slate-500">
+          Ingests shot and pass events for all 64 WC 2022 matches from StatsBomb's open-data repository (CC BY-SA 4.0).
+          Processed in batches of 3 matches — click repeatedly until done. Data feeds future shot maps and
+          passing-network analysis. Idempotent: already-loaded matches are skipped.
+        </p>
+        {progress && (
+          <p className="mt-2 text-xs text-slate-400">
+            Progress: {progress}
+            {!state.hasMore && ' — all done ✓'}
+          </p>
+        )}
+        {state.hasMore && (
+          <button
+            type="button"
+            onClick={() => void handleIngest()}
+            disabled={state.kind === 'loading'}
+            className="mt-4 rounded-md bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {state.kind === 'loading' ? 'Loading…' : state.offset === 0 ? 'Start ingestion' : 'Load next batch'}
+          </button>
+        )}
+        {state.kind === 'ok' && <p className="mt-3 text-sm text-pitch-700">✓ {state.message}</p>}
+        {state.kind === 'error' && <p className="mt-3 text-sm text-red-600">{state.message}</p>}
+      </div>
+    </section>
+  )
+}
+
+// ----------------------------------------------------------------------------
+// Squad sync — pulls all WC 2026 team rosters + coaches from football-data.org
+// ----------------------------------------------------------------------------
+function SquadSyncSection() {
+  const [state, setState] = useState<{ kind: 'idle' | 'loading' | 'ok' | 'error'; message?: string }>({ kind: 'idle' })
+
+  async function handleSync() {
+    setState({ kind: 'loading' })
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-squads`,
+        { method: 'POST' },
+      )
+      const data = (await res.json()) as { teams?: number; players?: number; errors?: string[]; error?: string }
+      if (!res.ok) { setState({ kind: 'error', message: data.error ?? `HTTP ${res.status}` }); return }
+      const errMsg = data.errors?.length ? ` (${data.errors.length} errors)` : ''
+      setState({ kind: 'ok', message: `Synced ${data.teams ?? 0} teams, ${data.players ?? 0} players${errMsg}.` })
+    } catch (err) {
+      setState({ kind: 'error', message: err instanceof Error ? err.message : 'Unknown error' })
+    }
+  }
+
+  return (
+    <section className="space-y-3">
+      <h2 className="text-base font-semibold text-slate-900">Squad + Coach Sync</h2>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p className="text-sm text-slate-500">
+          Fetches all WC 2026 team squads and head coaches from football-data.org (1 API call).
+          Stores in <code className="rounded bg-slate-100 px-1 text-xs">teams</code> and{' '}
+          <code className="rounded bg-slate-100 px-1 text-xs">players</code> tables.
+          Run once at tournament start; re-run if coaching changes occur.
+        </p>
+        <button
+          type="button"
+          onClick={() => void handleSync()}
+          disabled={state.kind === 'loading'}
+          className="mt-4 rounded-md bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {state.kind === 'loading' ? 'Syncing…' : 'Sync Squads & Coaches'}
+        </button>
+        {state.kind === 'ok'    && <p className="mt-3 text-sm text-pitch-700">✓ {state.message}</p>}
+        {state.kind === 'error' && <p className="mt-3 text-sm text-red-600">{state.message}</p>}
+      </div>
+    </section>
+  )
+}
+
+// ----------------------------------------------------------------------------
+// Team analytics — mines StatsBomb WC 2022 events into team_analytics table
+// ----------------------------------------------------------------------------
+function TeamAnalyticsSection() {
+  const [state, setState] = useState<{ kind: 'idle' | 'loading' | 'ok' | 'error'; message?: string }>({ kind: 'idle' })
+
+  async function handleCompute() {
+    setState({ kind: 'loading' })
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/compute-team-analytics`,
+        { method: 'POST' },
+      )
+      const data = (await res.json()) as { computed?: number; teams?: string[]; error?: string; message?: string }
+      if (!res.ok) { setState({ kind: 'error', message: data.error ?? `HTTP ${res.status}` }); return }
+      if (data.error) { setState({ kind: 'error', message: data.error }); return }
+      setState({ kind: 'ok', message: `Computed analytics for ${data.computed ?? 0} teams.` })
+    } catch (err) {
+      setState({ kind: 'error', message: err instanceof Error ? err.message : 'Unknown error' })
+    }
+  }
+
+  return (
+    <section className="space-y-3">
+      <h2 className="text-base font-semibold text-slate-900">Compute Team Analytics</h2>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p className="text-sm text-slate-500">
+          Mines the StatsBomb WC 2022 event data (shots + passes) to produce per-team tactical metrics:
+          passing volume, completion rate, pressing intensity, xG, passing-network centralization, and chaos index.
+          Results appear in the Analytics page under "Tactical Intelligence".
+          Requires StatsBomb ingestion to be run first.
+        </p>
+        <button
+          type="button"
+          onClick={() => void handleCompute()}
+          disabled={state.kind === 'loading'}
+          className="mt-4 rounded-md bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {state.kind === 'loading' ? 'Computing…' : 'Compute Team Analytics'}
+        </button>
+        {state.kind === 'ok'    && <p className="mt-3 text-sm text-pitch-700">✓ {state.message}</p>}
+        {state.kind === 'error' && <p className="mt-3 text-sm text-red-600">{state.message}</p>}
       </div>
     </section>
   )

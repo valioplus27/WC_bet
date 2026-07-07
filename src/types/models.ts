@@ -8,6 +8,11 @@ export type Standing = Database['public']['Tables']['standings']['Row']
 export type Bet = Database['public']['Tables']['bets']['Row']
 export type TournamentBet = Database['public']['Tables']['tournament_bets']['Row']
 export type TournamentConfig = Database['public']['Tables']['tournament_config']['Row']
+export type Prediction = Database['public']['Tables']['predictions']['Row']
+export type Shot = Database['public']['Tables']['shots']['Row']
+export type MatchEvent = Database['public']['Tables']['match_events']['Row']
+export type MatchEventLive = Database['public']['Tables']['match_events_live']['Row']
+export type MatchStats = Database['public']['Tables']['match_stats']['Row']
 
 // 2026 expands to 48 teams, so a Round of 32 precedes the Round of 16 — both
 // rounds are listed under both spellings data sources use in practice

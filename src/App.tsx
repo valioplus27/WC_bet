@@ -4,6 +4,7 @@ import { FullPageSpinner } from './components/Spinner'
 import { SetNewPassword } from './components/SetNewPassword'
 import Layout from './components/Layout'
 import { RedirectIfAuthed, RequireAdmin, RequireAuth } from './components/RouteGuards'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import SignIn from './pages/SignIn'
 import Schedule from './pages/Schedule'
 import TournamentBet from './pages/TournamentBet'
@@ -12,6 +13,12 @@ import Leaderboard from './pages/Leaderboard'
 import Admin from './pages/Admin'
 import Scorers from './pages/Scorers'
 import Stats from './pages/Stats'
+import Bracket from './pages/Bracket'
+import MatchAnalysis from './pages/MatchAnalysis'
+import Calendar from './pages/Calendar'
+import MatchDetail from './pages/MatchDetail'
+import TeamPage from './pages/TeamPage'
+import PlayerPage from './pages/PlayerPage'
 
 export default function App() {
   return (
@@ -31,9 +38,13 @@ export default function App() {
  * caught here rather than on one specific route.
  */
 function AppRoutes() {
-  const { loading, passwordRecovery, needsPasswordSetup } = useAuth()
+  const { loading, passwordRecovery, needsPasswordSetup, session, profile } = useAuth()
 
   if (loading) return <FullPageSpinner />
+  // Session exists but profile not yet loaded — brief window after magic-link
+  // sign-in while the profile fetch is in flight. Keep the spinner up so the
+  // user doesn't land in the app with profile=null and bypass password setup.
+  if (session && !profile) return <FullPageSpinner />
   if (passwordRecovery) return <SetNewPassword mode="recovery" />
   if (needsPasswordSetup) return <SetNewPassword mode="setup" />
 
@@ -51,7 +62,9 @@ function AppRoutes() {
       <Route
         element={
           <RequireAuth>
-            <Layout />
+            <ErrorBoundary>
+              <Layout />
+            </ErrorBoundary>
           </RequireAuth>
         }
       >
@@ -61,6 +74,12 @@ function AppRoutes() {
         <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="scorers" element={<Scorers />} />
         <Route path="stats" element={<Stats />} />
+        <Route path="bracket" element={<Bracket />} />
+        <Route path="analysis" element={<MatchAnalysis />} />
+        <Route path="calendar" element={<Calendar />} />
+        <Route path="match/:id" element={<MatchDetail />} />
+        <Route path="team/:slug" element={<TeamPage />} />
+        <Route path="player/:name" element={<PlayerPage />} />
         <Route
           path="admin"
           element={

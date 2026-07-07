@@ -101,7 +101,7 @@ function FormCard({ form, title }: { form: FormWindow; title: string }) {
 
 const POSITION_ORDER = ['Goalkeeper', 'Defence', 'Midfield', 'Offence']
 
-function SquadSection({ players, teamInfo }: { players: Player[]; teamInfo: TeamInfo | null }) {
+function SquadSection({ players, teamInfo, teamSlug }: { players: Player[]; teamInfo: TeamInfo | null; teamSlug: string }) {
   if (players.length === 0) {
     return (
       <section className="rounded-xl border border-dashed border-surface-4 bg-surface-2 p-5">
@@ -130,16 +130,16 @@ function SquadSection({ players, teamInfo }: { players: Player[]; teamInfo: Team
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold text-slate-100">Squad</h2>
-          <p className="text-[10px] text-slate-400">{players.length} players · click name for WC 2022 analytics</p>
+          <p className="text-[10px] text-slate-400">{players.length} players · tap a name for analytics</p>
         </div>
         {teamInfo?.coach_name && (
-          <div className="text-right">
+          <Link to={`/coach/${teamSlug}`} className="group text-right">
             <p className="text-[10px] text-slate-400">Head coach</p>
-            <p className="text-xs font-semibold text-slate-300">{teamInfo.coach_name}</p>
+            <p className="text-xs font-semibold text-slate-300 group-hover:text-pitch-400 transition">{teamInfo.coach_name} →</p>
             {teamInfo.coach_nationality && (
               <p className="text-[10px] text-slate-400">{teamInfo.coach_nationality}</p>
             )}
-          </div>
+          </Link>
         )}
       </div>
 
@@ -244,10 +244,28 @@ export default function TeamPage() {
 
   if (loading)   return <Spinner label="Loading team…" />
   if (notFound || !detail) {
+    const prettyName = (slug ?? '')
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase())
     return (
-      <div className="mx-auto max-w-3xl space-y-3">
-        <p className="text-sm text-red-600">Team not found.</p>
-        <Link to="/calendar" className="text-sm text-pitch-400 hover:underline">← Back to calendar</Link>
+      <div className="mx-auto max-w-2xl space-y-4">
+        <Link to="/analytics" className="text-xs text-pitch-400 hover:underline">← Back to analytics</Link>
+        <div className="rounded-xl border border-surface-4/70 bg-surface-2 px-6 py-10 text-center">
+          <p className="text-3xl">🌍</p>
+          <p className="mt-3 text-base font-semibold text-slate-100">
+            {prettyName || 'This team'} isn’t in World Cup 2026
+          </p>
+          <p className="mx-auto mt-2 max-w-sm text-sm text-slate-400">
+            We only track the 48 nations that qualified for the tournament. This team either didn’t
+            qualify, or its data hasn’t been loaded yet.
+          </p>
+          <Link
+            to="/standings"
+            className="mt-5 inline-block rounded-lg border border-surface-4 bg-surface-3 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-surface-4/60"
+          >
+            Browse qualified teams →
+          </Link>
+        </div>
       </div>
     )
   }
@@ -270,7 +288,7 @@ export default function TeamPage() {
       </div>
 
       {/* Squad */}
-      <SquadSection players={players} teamInfo={teamInfo} />
+      <SquadSection players={players} teamInfo={teamInfo} teamSlug={slug ?? ''} />
 
       {/* Rolling form — last 5 */}
       <FormCard form={form5} title="Form — last 5 matches" />

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useMatches } from '../hooks/useMatches'
 import { Spinner } from '../components/Spinner'
@@ -160,6 +161,14 @@ function MatchCard({ match, pred }: { match: Match; pred: Prediction | undefined
           )}
         </div>
       )}
+
+      {/* Full match view — squads, timeline, H2H, deeper analysis */}
+      <Link
+        to={`/match/${match.id}`}
+        className="mt-3 flex items-center justify-center gap-1 rounded-lg border border-surface-4 bg-surface-1 py-2 text-[11px] font-semibold text-slate-300 transition hover:border-pitch-600/50 hover:bg-surface-3 hover:text-pitch-300"
+      >
+        View match &amp; analysis →
+      </Link>
     </div>
   )
 }

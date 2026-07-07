@@ -3,22 +3,60 @@ import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 // ---------------------------------------------------------------------------
-// Nav structure
+// Nav structure — grouped into a handful of sections with sub-menus so the
+// sidebar stays scannable instead of a long flat list.
 // ---------------------------------------------------------------------------
 
 type NavItem = { to: string; label: string; icon: string; end?: boolean }
+type NavGroup = { id: string; label: string; icon: string; items: NavItem[] }
 
-const NAV_ITEMS: NavItem[] = [
-  { to: '/calendar',       label: 'Calendar',     icon: '📅', end: false },
-  { to: '/',               label: 'My bets',      icon: '🎯', end: true  },
-  { to: '/standings',      label: 'Standings',    icon: '📊', end: false },
-  { to: '/bracket',        label: 'Bracket',      icon: '🏆', end: false },
-  { to: '/leaderboard',    label: 'Leaderboard',  icon: '🥇', end: false },
-  { to: '/analytics',      label: 'Analytics',    icon: '📈', end: false },
-  { to: '/tournament-bet', label: 'Tournament',   icon: '🏅', end: false },
-  { to: '/scorers',        label: 'Top Scorers',  icon: '⚽', end: false },
-  { to: '/upset-radar',   label: 'Upset Radar',  icon: '⚡', end: false },
+const NAV_GROUPS: NavGroup[] = [
+  {
+    id: 'play',
+    label: 'Play',
+    icon: '🎯',
+    items: [
+      { to: '/',               label: 'My bets',    icon: '🎯', end: true },
+      { to: '/tournament-bet', label: 'Tournament', icon: '🏅' },
+    ],
+  },
+  {
+    id: 'matches',
+    label: 'Matches',
+    icon: '📅',
+    items: [
+      { to: '/calendar', label: 'Calendar', icon: '📅' },
+      { to: '/bracket',  label: 'Bracket',  icon: '🏆' },
+    ],
+  },
+  {
+    id: 'tables',
+    label: 'Tables',
+    icon: '📊',
+    items: [
+      { to: '/standings',   label: 'Standings',   icon: '📊' },
+      { to: '/scorers',     label: 'Top Scorers', icon: '⚽' },
+      { to: '/leaderboard', label: 'Leaderboard', icon: '🥇' },
+    ],
+  },
+  {
+    id: 'insights',
+    label: 'Insights',
+    icon: '📈',
+    items: [
+      { to: '/analytics',   label: 'Analytics',   icon: '📈' },
+      { to: '/upset-radar', label: 'Upset Radar', icon: '⚡' },
+    ],
+  },
 ]
+
+// All leaf items, flat — used when the sidebar is collapsed to an icon rail.
+const NAV_LEAVES: NavItem[] = NAV_GROUPS.flatMap((g) => g.items)
+
+function groupContainsPath(group: NavGroup, pathname: string): boolean {
+  return group.items.some((it) => (it.end ? pathname === it.to : pathname.startsWith(it.to) && it.to !== '/'))
+    || group.items.some((it) => it.to === '/' && pathname === '/')
+}
 
 // ---------------------------------------------------------------------------
 // Sidebar link
@@ -28,10 +66,12 @@ function SideNavLink({
   item,
   collapsed,
   onClick,
+  nested,
 }: {
   item: NavItem
   collapsed: boolean
   onClick?: () => void
+  nested?: boolean
 }) {
   return (
     <NavLink
@@ -40,7 +80,9 @@ function SideNavLink({
       onClick={onClick}
       title={collapsed ? item.label : undefined}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+        `flex items-center gap-3 rounded-lg py-2 text-sm font-medium transition-all duration-150 ${
+          nested ? 'pl-9 pr-3' : 'px-3'
+        } ${
           isActive
             ? 'bg-pitch-600/20 text-pitch-400 ring-1 ring-pitch-600/30'
             : 'text-slate-400 hover:bg-surface-3 hover:text-slate-100'
@@ -50,6 +92,89 @@ function SideNavLink({
       <span className="text-base leading-none" aria-hidden="true">{item.icon}</span>
       {!collapsed && <span className="truncate">{item.label}</span>}
     </NavLink>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Collapsible nav group (expanded sidebar / drawer only)
+// ---------------------------------------------------------------------------
+
+function NavGroupSection({
+  group,
+  onNavigate,
+}: {
+  group: NavGroup
+  onNavigate?: () => void
+}) {
+  const location = useLocation()
+  const active = groupContainsPath(group, location.pathname)
+  const [open, setOpen] = useState(active)
+
+  // Auto-open the group that owns the current route when navigation lands in it.
+  useEffect(() => {
+    if (active) setOpen(true)
+  }, [active])
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold transition ${
+          active ? 'text-slate-100' : 'text-slate-300 hover:bg-surface-3 hover:text-slate-100'
+        }`}
+      >
+        <span className="text-base leading-none" aria-hidden="true">{group.icon}</span>
+        <span className="flex-1 truncate text-left">{group.label}</span>
+        <span className={`text-[10px] text-slate-500 transition-transform ${open ? 'rotate-90' : ''}`}>›</span>
+      </button>
+      {open && (
+        <div className="mt-0.5 space-y-0.5">
+          {group.items.map((item) => (
+            <SideNavLink key={item.to} item={item} collapsed={false} onClick={onNavigate} nested />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Full nav body — grouped when expanded, flat icon rail when collapsed
+// ---------------------------------------------------------------------------
+
+function NavBody({
+  collapsed,
+  isAdmin,
+  onNavigate,
+}: {
+  collapsed: boolean
+  isAdmin: boolean
+  onNavigate?: () => void
+}) {
+  if (collapsed) {
+    return (
+      <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
+        {NAV_LEAVES.map((item) => (
+          <SideNavLink key={item.to} item={item} collapsed onClick={onNavigate} />
+        ))}
+        {isAdmin && (
+          <SideNavLink item={{ to: '/admin', label: 'Admin', icon: '⚙️' }} collapsed onClick={onNavigate} />
+        )}
+      </nav>
+    )
+  }
+  return (
+    <nav className="flex-1 space-y-1 overflow-y-auto p-2">
+      {NAV_GROUPS.map((group) => (
+        <NavGroupSection key={group.id} group={group} onNavigate={onNavigate} />
+      ))}
+      {isAdmin && (
+        <div className="pt-1">
+          <SideNavLink item={{ to: '/admin', label: 'Admin', icon: '⚙️' }} collapsed={false} onClick={onNavigate} />
+        </div>
+      )}
+    </nav>
   )
 }
 
@@ -88,17 +213,7 @@ function DesktopSidebar({
       </div>
 
       {/* Nav links */}
-      <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
-        {NAV_ITEMS.map((item) => (
-          <SideNavLink key={item.to} item={item} collapsed={collapsed} />
-        ))}
-        {isAdmin && (
-          <SideNavLink
-            item={{ to: '/admin', label: 'Admin', icon: '⚙️', end: false }}
-            collapsed={collapsed}
-          />
-        )}
-      </nav>
+      <NavBody collapsed={collapsed} isAdmin={isAdmin} />
 
       {/* Bottom section — intentionally empty for now */}
       <div className="border-t border-surface-4 p-2" />
@@ -161,18 +276,7 @@ function MobileDrawer({
             ✕
           </button>
         </div>
-        <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
-          {NAV_ITEMS.map((item) => (
-            <SideNavLink key={item.to} item={item} collapsed={false} onClick={onClose} />
-          ))}
-          {isAdmin && (
-            <SideNavLink
-              item={{ to: '/admin', label: 'Admin', icon: '⚙️' }}
-              collapsed={false}
-              onClick={onClose}
-            />
-          )}
-        </nav>
+        <NavBody collapsed={false} isAdmin={isAdmin} onNavigate={onClose} />
       </div>
     </>
   )

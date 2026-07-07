@@ -21,6 +21,7 @@ import Calendar from './pages/Calendar'
 import MatchDetail from './pages/MatchDetail'
 import TeamPage from './pages/TeamPage'
 import PlayerPage from './pages/PlayerPage'
+import CoachPage from './pages/CoachPage'
 
 export default function App() {
   return (
@@ -84,6 +85,7 @@ function AppRoutes() {
         <Route path="match/:id" element={<MatchDetail />} />
         <Route path="team/:slug" element={<TeamPage />} />
         <Route path="player/:name" element={<PlayerPage />} />
+        <Route path="coach/:slug" element={<CoachPage />} />
         <Route
           path="admin"
           element={

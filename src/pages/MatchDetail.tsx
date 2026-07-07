@@ -174,7 +174,11 @@ function StatsPanel({ match }: { match: Detail }) {
     if (!isLiveOrRecent) return null
     return (
       <section className="rounded-xl border border-dashed border-surface-4/50 bg-surface-2/50 px-4 py-3">
-        <p className="text-xs text-slate-500">Live stats will appear here once data is synced.</p>
+        <p className="text-xs text-slate-500">
+          {match.status === 'finished'
+            ? 'Detailed statistics aren’t available for this match.'
+            : 'Detailed possession and shot stats aren’t available for this match yet — the score above updates automatically.'}
+        </p>
       </section>
     )
   }

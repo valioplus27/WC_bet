@@ -303,7 +303,7 @@ function CoachesTab({ coaches }: { coaches: Coach[] }) {
         {filtered.map((c) => (
           <Link
             key={c.id}
-            to={`/team/${c.id}`}
+            to={`/coach/${c.id}`}
             className="group flex items-center gap-3 rounded-xl border border-surface-4/70 bg-surface-2 p-4 transition hover:border-pitch-600/50 hover:bg-surface-3"
           >
             {c.crest_url ? (

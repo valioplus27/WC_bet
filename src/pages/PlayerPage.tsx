@@ -295,7 +295,7 @@ export default function PlayerPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <Link to="/standings" className="text-xs text-pitch-400 hover:underline">← Standings</Link>
+        <Link to="/analytics" className="text-xs text-pitch-400 hover:underline">← Analytics</Link>
         <div className="mt-2">
           <h1 className="text-2xl font-black text-slate-100">{playerName || 'Player'}</h1>
           {stats.team && <p className="mt-0.5 text-sm text-slate-500">{stats.team}</p>}
@@ -325,11 +325,29 @@ export default function PlayerPage() {
             </div>
           )}
           <div className="text-center">
-            <p className="text-sm font-semibold text-slate-300">No analytics data for "{playerName}"</p>
-            <p className="mt-2 text-xs text-slate-500 max-w-sm mx-auto">
-              Analytics coverage: players who appeared in WC 2018, WC 2022, Euro 2020, Euro 2024, or Copa América 2024 (StatsBomb open data).
-              {!squadInfo ? ' This player may not be in the squad database — try searching by full official name.' : ''}
-            </p>
+            <p className="text-2xl">📋</p>
+            {squadInfo ? (
+              <>
+                <p className="mt-2 text-sm font-semibold text-slate-200">
+                  No historical match data yet for {playerName}
+                </p>
+                <p className="mt-2 text-xs text-slate-400 max-w-sm mx-auto">
+                  {playerName} is in the World Cup 2026 squad above, but didn’t feature in the
+                  tournaments we hold detailed event data for (WC 2018 &amp; 2022, Euro 2020 &amp; 2024,
+                  Copa América 2024). Analytics will fill in as they play.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="mt-2 text-sm font-semibold text-slate-200">
+                  {playerName} isn’t in our data
+                </p>
+                <p className="mt-2 text-xs text-slate-400 max-w-sm mx-auto">
+                  This player isn’t in a World Cup 2026 squad and didn’t appear in the tournaments we
+                  cover. If you reached this from a link, the name may differ from the official spelling.
+                </p>
+              </>
+            )}
           </div>
           <div className="text-center">
             <Link to="/analytics" className="text-xs text-pitch-400 hover:underline">

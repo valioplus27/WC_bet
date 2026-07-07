@@ -14,6 +14,7 @@ import Admin from './pages/Admin'
 import Scorers from './pages/Scorers'
 import Stats from './pages/Stats'
 import Analytics from './pages/Analytics'
+import UpsetRadar from './pages/UpsetRadar'
 import Bracket from './pages/Bracket'
 import MatchAnalysis from './pages/MatchAnalysis'
 import Calendar from './pages/Calendar'
@@ -76,6 +77,7 @@ function AppRoutes() {
         <Route path="scorers" element={<Scorers />} />
         <Route path="stats" element={<Stats />} />
         <Route path="analytics" element={<Analytics />} />
+        <Route path="upset-radar" element={<UpsetRadar />} />
         <Route path="bracket" element={<Bracket />} />
         <Route path="analysis" element={<MatchAnalysis />} />
         <Route path="calendar" element={<Calendar />} />

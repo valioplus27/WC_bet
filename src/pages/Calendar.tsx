@@ -66,7 +66,7 @@ function DayNav({
         <div className="flex-1 text-center">
           <p className="text-base font-bold text-slate-100">{formatHeader(date)}</p>
           {!isToday && (
-            <button type="button" onClick={onToday} className="text-xs text-pitch-600 hover:underline">
+            <button type="button" onClick={onToday} className="text-xs text-pitch-400 hover:underline">
               Today
             </button>
           )}

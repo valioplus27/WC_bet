@@ -54,7 +54,7 @@ export function FormSparkline({ form, maxDots = 10 }: { form: FormWindow; maxDot
 export function FormBadges({ form, n }: { form: FormWindow; n: number }) {
   const letters = [...form.records].reverse().slice(-n).map((r) => r.result)
   const cls: Record<string, string> = {
-    W: 'bg-pitch-600/100 text-white',
+    W: 'bg-green-600 text-white',
     D: 'bg-amber-400 text-white',
     L: 'bg-red-950/600 text-white',
   }

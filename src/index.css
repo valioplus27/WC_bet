@@ -1,28 +1,29 @@
 @import "tailwindcss";
 
 @theme {
-  /* Pitch / accent green */
-  --color-pitch-50:  #f0fdf4;
-  --color-pitch-100: #dcfce7;
-  --color-pitch-300: #86efac;
-  --color-pitch-400: #4ade80;
-  --color-pitch-500: #22c55e;
-  --color-pitch-600: #16a34a;
-  --color-pitch-700: #15803d;
+  /* === UI accent: violet === */
+  --color-pitch-50:  #f5f3ff;   /* violet-50  */
+  --color-pitch-100: #ede9fe;   /* violet-100 */
+  --color-pitch-200: #ddd6fe;   /* violet-200 */
+  --color-pitch-300: #c4b5fd;   /* violet-300 */
+  --color-pitch-400: #a78bfa;   /* violet-400 — primary text accent */
+  --color-pitch-500: #8b5cf6;   /* violet-500 */
+  --color-pitch-600: #7c3aed;   /* violet-600 — buttons / active bg */
+  --color-pitch-700: #6d28d9;   /* violet-700 — hover */
 
-  /* Dark-slate surface scale */
-  --color-surface-0:  #070d1a;   /* deepest bg */
-  --color-surface-1:  #0f172a;   /* main page bg (slate-900) */
-  --color-surface-2:  #1e293b;   /* cards / panels (slate-800) */
-  --color-surface-3:  #293548;   /* elevated / hover */
-  --color-surface-4:  #334155;   /* borders / inputs (slate-700) */
+  /* === App surface scale: deep violet/black === */
+  --color-surface-0:  #030008;   /* almost pure black with violet cast */
+  --color-surface-1:  #0c0520;   /* page background */
+  --color-surface-2:  #160b35;   /* cards / panels */
+  --color-surface-3:  #1f1148;   /* elevated / hover */
+  --color-surface-4:  #3a1d80;   /* borders */
 }
 
 body {
   @apply bg-surface-1 text-slate-100 antialiased;
 }
 
-/* Dark-mode inputs — apply globally so components don't have to spell it out */
+/* Global dark inputs */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 select,
 textarea {
@@ -31,7 +32,8 @@ textarea {
 }
 input::placeholder, textarea::placeholder { @apply text-slate-500; }
 
+/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { @apply bg-surface-4 rounded; }
-::-webkit-scrollbar-thumb:hover { @apply bg-slate-500; }
+::-webkit-scrollbar-thumb { background: #3a1d80; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #5b2fcf; }

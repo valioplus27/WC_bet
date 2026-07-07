@@ -349,7 +349,7 @@ export default function MatchDetailPage() {
     return (
       <div className="mx-auto max-w-3xl space-y-3">
         <p className="text-sm text-red-600">Match not found.</p>
-        <Link to="/calendar" className="text-sm text-pitch-600 hover:underline">← Back to calendar</Link>
+        <Link to="/calendar" className="text-sm text-pitch-400 hover:underline">← Back to calendar</Link>
       </div>
     )
   }
@@ -361,7 +361,7 @@ export default function MatchDetailPage() {
     <div className="mx-auto max-w-3xl space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center justify-between">
-        <Link to="/calendar" className="text-xs text-pitch-600 hover:underline">← Calendar</Link>
+        <Link to="/calendar" className="text-xs text-pitch-400 hover:underline">← Calendar</Link>
         {isLive && lastUpdated && (
           <p className="text-[10px] text-slate-400">
             Updated {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} · refreshes every 30s

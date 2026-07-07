@@ -27,9 +27,9 @@ export type FormResult = {
 // ---------------------------------------------------------------------------
 
 const RESULT_STYLES = {
-  W: 'bg-pitch-600/100 text-white',
-  D: 'bg-slate-400 text-white',
-  L: 'bg-red-400 text-white',
+  W: 'bg-green-600 text-white',
+  D: 'bg-slate-500 text-white',
+  L: 'bg-red-500 text-white',
 } as const
 
 function FormBadge({ r, title }: { r: FormResult; title: string }) {
@@ -51,10 +51,10 @@ function StandingRow({ s }: { s: Standing }) {
       <span className="ml-auto flex gap-2 tabular-nums text-slate-400">
         <span title="Points" className="font-semibold text-slate-300">{s.points} pts</span>
         <span title="Played">{s.played}GP</span>
-        <span title="Won" className="text-pitch-600">{s.won}W</span>
+        <span title="Won" className="text-green-400">{s.won}W</span>
         <span title="Drawn">{s.draw}D</span>
         <span title="Lost" className="text-red-400">{s.lost}L</span>
-        <span title="Goal difference" className={s.goal_difference > 0 ? 'text-pitch-600' : s.goal_difference < 0 ? 'text-red-400' : ''}>
+        <span title="Goal difference" className={s.goal_difference > 0 ? 'text-green-400' : s.goal_difference < 0 ? 'text-red-400' : ''}>
           {s.goal_difference > 0 ? '+' : ''}{s.goal_difference}
         </span>
       </span>
@@ -199,7 +199,7 @@ export function MatchPreview({ match, homeForm, awayForm, homeStanding, awayStan
                     {form.slice(0, 3).map((r, i) => (
                       <span key={i}>
                         {i > 0 && <span className="mx-0.5 text-slate-200">·</span>}
-                        <span className={r.result === 'W' ? 'text-pitch-600' : r.result === 'L' ? 'text-red-400' : 'text-slate-500'}>
+                        <span className={r.result === 'W' ? 'text-green-400' : r.result === 'L' ? 'text-red-400' : 'text-slate-500'}>
                           {r.isHome ? '' : '@'}{r.opponent.split(' ').pop()} {r.goalsFor}–{r.goalsAgainst}
                         </span>
                       </span>

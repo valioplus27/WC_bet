@@ -341,6 +341,8 @@ Deno.serve(async (req) => {
       home_win_prob: Math.round(cal[0] * 10000) / 10000,
       draw_prob:     Math.round(cal[1] * 10000) / 10000,
       away_win_prob: Math.round(cal[2] * 10000) / 10000,
+      lambda_home:   Math.round(lh * 10000) / 10000,
+      lambda_away:   Math.round(la * 10000) / 10000,
       computed_at:   new Date().toISOString(),
     })
   }

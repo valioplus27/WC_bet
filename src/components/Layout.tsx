@@ -17,6 +17,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/analytics',      label: 'Analytics',    icon: '📈', end: false },
   { to: '/tournament-bet', label: 'Tournament',   icon: '🏅', end: false },
   { to: '/scorers',        label: 'Top Scorers',  icon: '⚽', end: false },
+  { to: '/upset-radar',   label: 'Upset Radar',  icon: '⚡', end: false },
 ]
 
 // ---------------------------------------------------------------------------

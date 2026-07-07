@@ -45,7 +45,7 @@ export function ScoreInput({
 
 function PointsPill({ points }: { points: number }) {
   const className =
-    points >= 3 ? 'bg-pitch-600/10 text-pitch-400' : points >= 1 ? 'bg-amber-950/50 text-amber-400' : 'bg-surface-3 text-slate-500'
+    points >= 3 ? 'bg-green-900/30 text-green-400' : points >= 1 ? 'bg-amber-950/50 text-amber-400' : 'bg-surface-3 text-slate-500'
   return <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${className}`}>+{points} pt{points === 1 ? '' : 's'}</span>
 }
 

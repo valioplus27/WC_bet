@@ -5,6 +5,8 @@ import { Spinner } from '../components/Spinner'
 import { stageLabel, sortStages, type Match } from '../types/models'
 import { formatKickoff, matchStatusBadge } from '../lib/format'
 import type { Prediction } from '../types/models'
+import { ScoreHeatmap, OverUnderCurve, MonteCarloTable, runMonteCarlo, type SimMatch, type SimResult } from '../components/PredictionEngine'
+import { MatchNarrative } from '../components/MatchNarrative'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -74,18 +76,20 @@ function MatchCard({ match, pred }: { match: Match; pred: Prediction | undefined
   const hasScore = match.home_score !== null
   const isLive = match.status === 'IN_PLAY' || match.status === 'PAUSED'
   const badge = matchStatusBadge(match.status)
+  const [showDeep, setShowDeep] = useState(false)
+  const hasLambda = pred?.lambda_home != null && pred?.lambda_away != null
 
   return (
     <div
       className={`rounded-xl border bg-surface-2 p-4 shadow-none ${
-        isLive ? 'border-red-800 ring-1 ring-red-200' : 'border-surface-4'
+        isLive ? 'border-red-800 ring-1 ring-red-800/40' : 'border-surface-4'
       }`}
     >
       <div className="mb-2 flex items-center justify-between gap-2 text-[11px] text-slate-400">
         <time dateTime={match.kickoff_at}>{formatKickoff(match.kickoff_at)}</time>
         {isLive ? (
-          <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-400">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-950/600" />
+          <span className="flex items-center gap-1 rounded-full bg-red-950/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-400">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
             Live
           </span>
         ) : badge ? (
@@ -96,45 +100,23 @@ function MatchCard({ match, pred }: { match: Match; pred: Prediction | undefined
       </div>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-        {/* Home team */}
-        <div className="flex items-center gap-2">
-          <span
-            className={`truncate text-sm font-semibold ${
-              result === 'home' ? 'text-pitch-400' : result !== null ? 'text-slate-400' : 'text-slate-100'
-            }`}
-          >
-            {match.home_team}
-          </span>
-        </div>
-
-        {/* Score or vs */}
+        <span className={`truncate text-sm font-semibold ${result === 'home' ? 'text-pitch-400' : result !== null ? 'text-slate-400' : 'text-slate-100'}`}>
+          {match.home_team}
+        </span>
         {hasScore ? (
-          <div
-            className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-base font-bold tabular-nums ${
-              isLive ? 'bg-red-950/60 text-red-900' : 'bg-surface-3 text-slate-100'
-            }`}
-          >
+          <div className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-base font-bold tabular-nums ${isLive ? 'bg-red-950/60 text-red-300' : 'bg-surface-3 text-slate-100'}`}>
             <span>{match.home_score}</span>
-            <span className={isLive ? 'text-red-300' : 'text-slate-400'}>–</span>
+            <span className="text-slate-500">–</span>
             <span>{match.away_score}</span>
           </div>
         ) : (
-          <div className="rounded-lg bg-surface-1 px-3 py-1 text-xs font-medium text-slate-400">vs</div>
+          <div className="rounded-lg bg-surface-1 px-3 py-1 text-xs font-medium text-slate-500">vs</div>
         )}
-
-        {/* Away team */}
-        <div className="flex items-center justify-end gap-2">
-          <span
-            className={`truncate text-right text-sm font-semibold ${
-              result === 'away' ? 'text-pitch-400' : result !== null ? 'text-slate-400' : 'text-slate-100'
-            }`}
-          >
-            {match.away_team}
-          </span>
-        </div>
+        <span className={`truncate text-right text-sm font-semibold ${result === 'away' ? 'text-pitch-400' : result !== null ? 'text-slate-400' : 'text-slate-100'}`}>
+          {match.away_team}
+        </span>
       </div>
 
-      {/* Prediction bar for upcoming matches */}
       {!hasScore && pred && (
         <ProbBar
           homeWin={pred.home_win_prob}
@@ -143,6 +125,40 @@ function MatchCard({ match, pred }: { match: Match; pred: Prediction | undefined
           homeTeam={match.home_team}
           awayTeam={match.away_team}
         />
+      )}
+
+      {/* AI narrative (pre or post) */}
+      <MatchNarrative
+        match={match} pred={pred}
+        homeForm={[]} awayForm={[]}
+        mode={hasScore ? 'post' : 'pre'}
+      />
+
+      {/* Deep analysis toggle (upcoming matches with lambda values) */}
+      {!hasScore && hasLambda && (
+        <div className="mt-3 border-t border-surface-4/40 pt-3">
+          <button
+            type="button"
+            onClick={() => setShowDeep((v) => !v)}
+            className="text-[11px] font-semibold text-pitch-400 hover:text-pitch-300 transition"
+          >
+            {showDeep ? '▲ Hide analysis' : '▼ Score heatmap & over/under'}
+          </button>
+          {showDeep && (
+            <div className="mt-3 space-y-5">
+              <ScoreHeatmap
+                lambdaHome={pred!.lambda_home!}
+                lambdaAway={pred!.lambda_away!}
+                homeTeam={match.home_team}
+                awayTeam={match.away_team}
+              />
+              <OverUnderCurve
+                lambdaHome={pred!.lambda_home!}
+                lambdaAway={pred!.lambda_away!}
+              />
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
@@ -300,6 +316,31 @@ export default function Bracket() {
 
   const orderedStages = useMemo(() => sortStages([...byStage.keys()]), [byStage])
 
+  // Build Monte Carlo input from knockout matches + predictions
+  const simMatches = useMemo((): SimMatch[] => {
+    return knockoutMatches.map((m) => {
+      const pred = predByMatch.get(m.id)
+      return {
+        matchId: m.id,
+        homeTeam: m.home_team,
+        awayTeam: m.away_team,
+        homeWinP: pred?.home_win_prob ?? 0.4,
+        drawP:    pred?.draw_prob    ?? 0.2,
+        awayWinP: pred?.away_win_prob ?? 0.4,
+        stage: m.stage,
+        kickoffAt: m.kickoff_at,
+        homeScore: m.home_score,
+        awayScore: m.away_score,
+        status: m.status,
+      }
+    })
+  }, [knockoutMatches, predByMatch])
+
+  const simResults = useMemo((): SimResult[] => {
+    if (simMatches.length === 0) return []
+    return runMonteCarlo(simMatches, 10_000)
+  }, [simMatches])
+
   const resolvedPreds = useMemo(() => predictions.filter((p) => p.actual_outcome !== null), [predictions])
   const avgBrier = useMemo(() => {
     if (resolvedPreds.length === 0) return null
@@ -345,6 +386,20 @@ export default function Bracket() {
           </section>
         )
       })}
+
+      {/* Monte Carlo tournament simulator */}
+      {simResults.length > 0 && (
+        <section className="space-y-4 rounded-xl border border-surface-4 bg-surface-2 p-6 shadow-none">
+          <div>
+            <h2 className="text-base font-semibold text-slate-100">🎲 Tournament simulator — 10,000 runs</h2>
+            <p className="text-xs text-slate-500">
+              Each run samples match outcomes from the model's win probabilities. Columns show the probability of
+              each team reaching that round. Re-simulated after every match using updated ratings.
+            </p>
+          </div>
+          <MonteCarloTable simResults={simResults} />
+        </section>
+      )}
 
       {/* Model calibration card */}
       {predictions.length > 0 && (

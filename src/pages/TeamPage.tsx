@@ -66,7 +66,7 @@ function FormCard({ form, title }: { form: FormWindow; title: string }) {
           <div className="mb-4 flex items-center gap-3">
             <FormSparkline form={form} maxDots={windowSize} />
             <div className="flex items-center gap-1 text-sm">
-              <span className="font-semibold text-pitch-400">{wins}W</span>
+              <span className="font-semibold text-green-400">{wins}W</span>
               <span className="text-slate-300">·</span>
               <span className="font-semibold text-amber-600">{draws}D</span>
               <span className="text-slate-300">·</span>
@@ -185,7 +185,7 @@ function RecentMatchRow({ match, teamName }: { match: TeamDetail['recent'][0]; t
   const result   = gf !== undefined && ga !== undefined
     ? gf > ga ? 'W' : gf === ga ? 'D' : 'L'
     : null
-  const cls: Record<string, string> = { W: 'text-pitch-400', D: 'text-amber-600', L: 'text-red-600' }
+  const cls: Record<string, string> = { W: 'text-green-400', D: 'text-amber-400', L: 'text-red-400' }
 
   return (
     <Link
@@ -247,7 +247,7 @@ export default function TeamPage() {
     return (
       <div className="mx-auto max-w-3xl space-y-3">
         <p className="text-sm text-red-600">Team not found.</p>
-        <Link to="/calendar" className="text-sm text-pitch-600 hover:underline">← Back to calendar</Link>
+        <Link to="/calendar" className="text-sm text-pitch-400 hover:underline">← Back to calendar</Link>
       </div>
     )
   }
@@ -258,7 +258,7 @@ export default function TeamPage() {
     <div className="mx-auto max-w-3xl space-y-6">
       {/* Header */}
       <div>
-        <Link to="/calendar" className="text-xs text-pitch-600 hover:underline">← Calendar</Link>
+        <Link to="/calendar" className="text-xs text-pitch-400 hover:underline">← Calendar</Link>
         <div className="mt-2 flex items-baseline gap-3">
           <h1 className="text-2xl font-black text-slate-100">{team.name}</h1>
           {teamInfo?.tla && (

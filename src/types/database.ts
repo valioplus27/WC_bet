@@ -303,6 +303,8 @@ export type Database = {
           home_win_prob: number
           draw_prob: number
           away_win_prob: number
+          lambda_home: number | null
+          lambda_away: number | null
           actual_outcome: 'home_win' | 'draw' | 'away_win' | null
           brier_score: number | null
           log_loss: number | null

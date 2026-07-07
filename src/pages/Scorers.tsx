@@ -77,7 +77,7 @@ export default function Scorers() {
                   )}
                 </td>
                 <td className="px-4 py-3 text-slate-500">{scorer.team_name}</td>
-                <td className="px-4 py-3 text-right font-bold tabular-nums text-pitch-400">{scorer.goals}</td>
+                <td className="px-4 py-3 text-right font-bold tabular-nums text-green-400">{scorer.goals}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-slate-400">{scorer.assists}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-slate-400 text-xs">{scorer.penalties}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-slate-400 text-xs">{scorer.played_matches}</td>

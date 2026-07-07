@@ -287,7 +287,7 @@ export default function PlayerPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <Link to="/standings" className="text-xs text-pitch-600 hover:underline">← Standings</Link>
+        <Link to="/standings" className="text-xs text-pitch-400 hover:underline">← Standings</Link>
         <div className="mt-2">
           <h1 className="text-2xl font-black text-slate-100">{playerName || 'Player'}</h1>
           {stats.team && <p className="mt-0.5 text-sm text-slate-500">{stats.team}</p>}
@@ -305,7 +305,7 @@ export default function PlayerPage() {
           <p className="mt-1 text-xs text-slate-400">
             StatsBomb open data covers select WC 2022 matches. Try a different spelling.
           </p>
-          <Link to="/standings" className="mt-4 inline-block text-xs text-pitch-600 hover:underline">
+          <Link to="/standings" className="mt-4 inline-block text-xs text-pitch-400 hover:underline">
             ← Back to standings
           </Link>
         </div>

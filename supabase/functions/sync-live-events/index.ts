@@ -67,31 +67,46 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
 
-  // Matches that are live, paused, or kicking off within the next 30 minutes.
+  // Candidates:
+  //   • live / paused                → polled continuously (throttled)
+  //   • kicking off within 30 min    → resolve API-Football id ahead of time
+  //   • finished                     → backfill final stats/events once, for
+  //                                     any match that never got polled while live
   // Football-data.org auto-sync already updates statuses — we trust those values.
   const soonCutoff = new Date(Date.now() + 30 * 60 * 1000).toISOString()
   const { data: candidates, error: matchErr } = await supabase
     .from('matches')
     .select('id, ext_id, home_team, away_team, kickoff_at, status, apifootball_id')
     .or(
-      `status.in.(IN_PLAY,PAUSED),and(status.in.(TIMED,SCHEDULED),kickoff_at.lte.${soonCutoff})`,
+      `status.in.(IN_PLAY,PAUSED,FINISHED),and(status.in.(TIMED,SCHEDULED),kickoff_at.lte.${soonCutoff})`,
     )
 
   if (matchErr) return jsonResp({ error: matchErr.message }, 500)
   if (!candidates?.length) {
-    return jsonResp({ skipped: true, reason: 'no live or imminent matches' })
+    return jsonResp({ skipped: true, reason: 'no live, imminent, or finished matches' })
   }
 
   // --- Resolve API-Football fixture IDs for any matches that don't have one ---
-  const unresolved = candidates.filter((m) => !m.apifootball_id)
+  // Only resolve for live/imminent matches. Finished matches are never worth a
+  // fixtures-list call on their own: if a match was never resolved while live it
+  // almost certainly can't be now (e.g. the data plan doesn't cover this season),
+  // so triggering the call for them would just burn quota on every cron tick.
+  const unresolved = candidates.filter((m) => !m.apifootball_id && m.status !== 'FINISHED')
+  let fixturesReturned = 0
+  let newlyResolved = 0
+  let apiErrors: unknown = null
   if (unresolved.length > 0) {
     const fixturesJson = await apiFetch(`/fixtures?league=${WC_LEAGUE}&season=${WC_SEASON}`) as {
       response?: Array<{
         fixture: { id: number; date: string }
         teams: { home: { name: string }; away: { name: string } }
       }>
+      errors?: unknown
+      results?: number
     }
     const allFixtures = fixturesJson?.response ?? []
+    fixturesReturned = allFixtures.length
+    apiErrors = fixturesJson?.errors ?? null
 
     for (const m of unresolved) {
       const matchDate = m.kickoff_at.slice(0, 10)
@@ -108,34 +123,16 @@ Deno.serve(async (req) => {
       if (hit) {
         await supabase.from('matches').update({ apifootball_id: hit.fixture.id }).eq('id', m.id)
         m.apifootball_id = hit.fixture.id
+        newlyResolved++
       }
     }
   }
 
-  // --- Live sync: only IN_PLAY / PAUSED matches, throttled to MIN_SYNC_MS ---
-  const live = candidates.filter(
-    (m) => (m.status === 'IN_PLAY' || m.status === 'PAUSED') && m.apifootball_id,
-  )
+  type MatchRow = typeof candidates[number]
 
-  // Check existing stats timestamps to avoid hammering the API on every 2-min tick.
-  const { data: recentStats } = await supabase
-    .from('match_stats')
-    .select('match_id, updated_at')
-    .in('match_id', live.map((m) => m.id))
-
-  const lastSyncMs = new Map(
-    (recentStats ?? []).map((s) => [s.match_id, new Date(s.updated_at).getTime()]),
-  )
-
-  let synced = 0
-  let throttled = 0
-
-  for (const match of live) {
-    if (Date.now() - (lastSyncMs.get(match.id) ?? 0) < MIN_SYNC_MS) {
-      throttled++
-      continue
-    }
-
+  // Fetch events + statistics for a single fixture and persist them.
+  // Returns true if statistics were found and stored.
+  async function syncMatch(match: MatchRow): Promise<boolean> {
     const fixtureId = match.apifootball_id!
 
     const [eventsJson, statsJson] = await Promise.all([
@@ -176,41 +173,85 @@ Deno.serve(async (req) => {
       await supabase.from('match_events_live').insert(eventRows)
     }
 
-    // -- Statistics: upsert one row per match --
-    const teamStats = statsJson?.response ?? []
-    if (teamStats.length >= 1) {
-      const homeNorm = normalize(match.home_team)
-      const homeData = teamStats.find((t) => normalize(t.team?.name ?? '') === homeNorm) ?? teamStats[0]
-      const awayData = teamStats.find((t) => normalize(t.team?.name ?? '') !== homeNorm) ?? teamStats[1]
-      const hSt = homeData?.statistics ?? []
-      const aSt = awayData?.statistics ?? []
+    // -- Statistics: upsert one row per match. API-Football only returns a
+    //    statistics payload with values once a match is under way, so a finished
+    //    match with no payload just isn't available on this data feed. --
+    const teamStats = (statsJson?.response ?? []).filter((t) => (t.statistics ?? []).length > 0)
+    if (teamStats.length < 1) return false
 
-      await supabase.from('match_stats').upsert(
-        {
-          match_id: match.id,
-          home_possession: parseStat(hSt, 'Ball Possession'),
-          away_possession: parseStat(aSt, 'Ball Possession'),
-          home_shots: parseStat(hSt, 'Total Shots'),
-          away_shots: parseStat(aSt, 'Total Shots'),
-          home_shots_on_target: parseStat(hSt, 'Shots on Goal'),
-          away_shots_on_target: parseStat(aSt, 'Shots on Goal'),
-          home_corners: parseStat(hSt, 'Corner Kicks'),
-          away_corners: parseStat(aSt, 'Corner Kicks'),
-          home_fouls: parseStat(hSt, 'Fouls'),
-          away_fouls: parseStat(aSt, 'Fouls'),
-          home_yellow_cards: parseStat(hSt, 'Yellow Cards'),
-          away_yellow_cards: parseStat(aSt, 'Yellow Cards'),
-          home_red_cards: parseStat(hSt, 'Red Cards'),
-          away_red_cards: parseStat(aSt, 'Red Cards'),
-          home_offsides: parseStat(hSt, 'Offsides'),
-          away_offsides: parseStat(aSt, 'Offsides'),
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'match_id' },
-      )
+    const homeNorm = normalize(match.home_team)
+    const homeData = teamStats.find((t) => normalize(t.team?.name ?? '') === homeNorm) ?? teamStats[0]
+    const awayData = teamStats.find((t) => normalize(t.team?.name ?? '') !== homeNorm) ?? teamStats[1]
+    const hSt = homeData?.statistics ?? []
+    const aSt = awayData?.statistics ?? []
+
+    await supabase.from('match_stats').upsert(
+      {
+        match_id: match.id,
+        home_possession: parseStat(hSt, 'Ball Possession'),
+        away_possession: parseStat(aSt, 'Ball Possession'),
+        home_shots: parseStat(hSt, 'Total Shots'),
+        away_shots: parseStat(aSt, 'Total Shots'),
+        home_shots_on_target: parseStat(hSt, 'Shots on Goal'),
+        away_shots_on_target: parseStat(aSt, 'Shots on Goal'),
+        home_corners: parseStat(hSt, 'Corner Kicks'),
+        away_corners: parseStat(aSt, 'Corner Kicks'),
+        home_fouls: parseStat(hSt, 'Fouls'),
+        away_fouls: parseStat(aSt, 'Fouls'),
+        home_yellow_cards: parseStat(hSt, 'Yellow Cards'),
+        away_yellow_cards: parseStat(aSt, 'Yellow Cards'),
+        home_red_cards: parseStat(hSt, 'Red Cards'),
+        away_red_cards: parseStat(aSt, 'Red Cards'),
+        home_offsides: parseStat(hSt, 'Offsides'),
+        away_offsides: parseStat(aSt, 'Offsides'),
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'match_id' },
+    )
+    return true
+  }
+
+  const live = candidates.filter(
+    (m) => (m.status === 'IN_PLAY' || m.status === 'PAUSED') && m.apifootball_id,
+  )
+  const finishedResolved = candidates.filter((m) => m.status === 'FINISHED' && m.apifootball_id)
+
+  // Existing stats: throttle live polling + skip already-backfilled finished matches.
+  const { data: recentStats } = await supabase
+    .from('match_stats')
+    .select('match_id, updated_at')
+    .in('match_id', [...live, ...finishedResolved].map((m) => m.id))
+
+  const lastSyncMs = new Map(
+    (recentStats ?? []).map((s) => [s.match_id, new Date(s.updated_at).getTime()]),
+  )
+  const haveStats = new Set((recentStats ?? []).map((s) => s.match_id))
+
+  // Backfill a bounded number of finished matches per run to stay inside the
+  // API-Football free-tier daily quota; the every-few-minutes cron catches up.
+  const BACKFILL_LIMIT = 6
+  const finishedMissing = finishedResolved
+    .filter((m) => !haveStats.has(m.id))
+    .slice(0, BACKFILL_LIMIT)
+
+  let synced = 0
+  let throttled = 0
+  let backfilled = 0
+  let backfillEmpty = 0
+
+  for (const match of live) {
+    if (Date.now() - (lastSyncMs.get(match.id) ?? 0) < MIN_SYNC_MS) {
+      throttled++
+      continue
     }
-
+    await syncMatch(match)
     synced++
+  }
+
+  for (const match of finishedMissing) {
+    const ok = await syncMatch(match)
+    if (ok) backfilled++
+    else backfillEmpty++
   }
 
   return jsonResp({
@@ -218,6 +259,13 @@ Deno.serve(async (req) => {
     live: live.length,
     synced,
     throttled,
-    resolved: unresolved.length,
+    unresolved: unresolved.length,
+    fixturesReturned,
+    newlyResolved,
+    apiErrors,
+    finishedResolved: finishedResolved.length,
+    finishedMissing: finishedMissing.length,
+    backfilled,
+    backfillEmpty,
   })
 })

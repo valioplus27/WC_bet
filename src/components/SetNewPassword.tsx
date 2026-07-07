@@ -37,7 +37,7 @@ const COPY: Record<Mode, { subtitle: string; intro: string; allowSkip: boolean }
  * automatically and lets this overlay close itself without any extra wiring.
  */
 export function SetNewPassword({ mode }: { mode: Mode }) {
-  const { dismissPasswordRecovery, signOut } = useAuth()
+  const { session, dismissPasswordRecovery, refreshProfile, signOut } = useAuth()
   const copy = COPY[mode]
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -58,7 +58,23 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
       setStatus('idle')
       return
     }
+    // Don't rely solely on the DB trigger — write has_password directly so the
+    // profile state clears needsPasswordSetup on the very next refresh.
+    if (session?.user.id) {
+      await supabase.from('profiles').update({ has_password: true }).eq('id', session.user.id)
+    }
+    // Refresh the React profile so needsPasswordSetup (= !has_password) becomes
+    // false immediately. In setup mode the App will auto-exit the overlay;
+    // in recovery mode we still show the success screen so the user can dismiss.
+    await refreshProfile()
     setStatus('saved')
+  }
+
+  // Called when the user explicitly clicks "Continue to the app".
+  // Refreshes profile one more time (safety net) then clears the recovery flag.
+  const handleContinue = async () => {
+    await refreshProfile()
+    dismissPasswordRecovery()
   }
 
   return (
@@ -83,7 +99,7 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
               */}
               <button
                 type="button"
-                onClick={dismissPasswordRecovery}
+                onClick={() => void handleContinue()}
                 className="w-full rounded-md bg-pitch-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pitch-700"
               >
                 Continue to the app

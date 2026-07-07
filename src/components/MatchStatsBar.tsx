@@ -8,11 +8,11 @@ function PossessionBar({ home, away }: { home: number | null; away: number | nul
   return (
     <div className="space-y-0.5">
       <div className="flex h-2 overflow-hidden rounded-full">
-        <div style={{ width: `${h}%` }} className="bg-blue-500" />
+        <div style={{ width: `${h}%` }} className="bg-blue-950/500" />
         <div style={{ width: `${a}%` }} className="bg-orange-400" />
       </div>
       <div className="flex justify-between text-[10px] tabular-nums">
-        <span className="font-semibold text-blue-600">{h}%</span>
+        <span className="font-semibold text-blue-400">{h}%</span>
         <span className="text-slate-400">possession</span>
         <span className="font-semibold text-orange-500">{a}%</span>
       </div>
@@ -37,7 +37,7 @@ function StatRow({
 
   return (
     <div className="grid grid-cols-[2rem_1fr_2rem] items-center gap-1.5 text-xs">
-      <span className="text-right tabular-nums font-semibold text-blue-600">{homeVal ?? '—'}</span>
+      <span className="text-right tabular-nums font-semibold text-blue-400">{homeVal ?? '—'}</span>
       <div className="space-y-0.5">
         <div className="relative h-1 overflow-hidden rounded-full bg-orange-100">
           <div
@@ -80,9 +80,9 @@ export function MatchStatsBar({
       : null
 
   return (
-    <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+    <div className="mt-3 space-y-2 border-t border-surface-4/40 pt-3">
       <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wide">
-        <span className="max-w-[5rem] truncate text-blue-500">{homeTeam}</span>
+        <span className="max-w-[5rem] truncate text-blue-400">{homeTeam}</span>
         <span className="text-slate-400">Match stats</span>
         <span className="max-w-[5rem] truncate text-right text-orange-400">{awayTeam}</span>
       </div>

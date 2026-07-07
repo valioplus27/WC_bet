@@ -24,12 +24,12 @@ export function ProbabilityBar({
   return (
     <div className="space-y-1">
       <div className={`flex overflow-hidden rounded-full ${h}`}>
-        <div style={{ width: `${hw}%` }} className="bg-blue-500" />
+        <div style={{ width: `${hw}%` }} className="bg-blue-950/500" />
         <div style={{ width: `${d}%`  }} className="bg-slate-300" />
         <div style={{ width: `${aw}%` }} className="bg-orange-400" />
       </div>
       <div className="flex justify-between text-[10px] tabular-nums text-slate-400">
-        <span className="font-semibold text-blue-600">{homeLabel ? `${homeLabel} ` : ''}{hw}%</span>
+        <span className="font-semibold text-blue-400">{homeLabel ? `${homeLabel} ` : ''}{hw}%</span>
         <span>Draw {d}%</span>
         <span className="font-semibold text-orange-500">{aw}%{awayLabel ? ` ${awayLabel}` : ''}</span>
       </div>

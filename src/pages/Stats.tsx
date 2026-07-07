@@ -60,7 +60,7 @@ type MatchContest = {
 // ---------------------------------------------------------------------------
 
 function getPersonality(s: PlayerStats): Personality {
-  if (s.totalBets === 0) return { label: 'Newcomer', bg: 'bg-slate-100', text: 'text-slate-500', icon: '🌱' }
+  if (s.totalBets === 0) return { label: 'Newcomer', bg: 'bg-surface-3', text: 'text-slate-500', icon: '🌱' }
 
   const exactPct = s.played > 0 ? s.exact / s.played : 0
   const outcomePct = s.played > 0 ? s.outcome / s.played : 0
@@ -69,14 +69,14 @@ function getPersonality(s: PlayerStats): Personality {
   const drawPct = s.totalBets > 0 ? s.drawPickCount / s.totalBets : 0
   const awayPct = s.totalBets > 0 ? s.awayPickCount / s.totalBets : 0
 
-  if (exactPct > 0.25) return { label: 'Sharpshooter', bg: 'bg-pitch-50', text: 'text-pitch-700', icon: '🎯' }
-  if (outcomePct > 0.65) return { label: 'Mr. Reliable', bg: 'bg-blue-50', text: 'text-blue-700', icon: '📊' }
-  if (avgGoals > 3.5) return { label: 'Goal Machine', bg: 'bg-red-50', text: 'text-red-700', icon: '⚽' }
-  if (avgGoals < 1.5) return { label: 'Lockdown', bg: 'bg-slate-100', text: 'text-slate-600', icon: '🛡️' }
-  if (drawPct > 0.3) return { label: 'Draw Merchant', bg: 'bg-amber-50', text: 'text-amber-700', icon: '🤝' }
+  if (exactPct > 0.25) return { label: 'Sharpshooter', bg: 'bg-pitch-600/10', text: 'text-pitch-400', icon: '🎯' }
+  if (outcomePct > 0.65) return { label: 'Mr. Reliable', bg: 'bg-blue-950/50', text: 'text-blue-700', icon: '📊' }
+  if (avgGoals > 3.5) return { label: 'Goal Machine', bg: 'bg-red-950/60', text: 'text-red-400', icon: '⚽' }
+  if (avgGoals < 1.5) return { label: 'Lockdown', bg: 'bg-surface-3', text: 'text-slate-400', icon: '🛡️' }
+  if (drawPct > 0.3) return { label: 'Draw Merchant', bg: 'bg-amber-950/50', text: 'text-amber-400', icon: '🤝' }
   if (awayPct > 0.5) return { label: 'Upset Hunter', bg: 'bg-purple-50', text: 'text-purple-700', icon: '💥' }
   if (homePct > 0.65) return { label: 'Home Lover', bg: 'bg-indigo-50', text: 'text-indigo-700', icon: '🏠' }
-  return { label: 'Balanced', bg: 'bg-slate-50', text: 'text-slate-600', icon: '⚖️' }
+  return { label: 'Balanced', bg: 'bg-surface-1', text: 'text-slate-400', icon: '⚖️' }
 }
 
 // ---------------------------------------------------------------------------
@@ -151,7 +151,7 @@ function generateTakeaways(teams: TeamAnalytics[]): { icon: string; text: string
 function MetricBar({ value, max, colorClass = 'bg-blue-400' }: { value: number; max: number; colorClass?: string }) {
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0
   return (
-    <div className="relative h-1.5 w-16 overflow-hidden rounded-full bg-slate-100">
+    <div className="relative h-1.5 w-16 overflow-hidden rounded-full bg-surface-3">
       <div style={{ width: `${pct}%` }} className={`absolute inset-y-0 left-0 rounded-full ${colorClass}`} />
     </div>
   )
@@ -329,12 +329,12 @@ export default function Stats() {
   return (
     <div className="mx-auto max-w-4xl space-y-10">
       <div>
-        <h1 className="text-xl font-bold text-slate-900">Analytics</h1>
+        <h1 className="text-xl font-bold text-slate-100">Analytics</h1>
         <p className="text-sm text-slate-500">Prediction styles, accuracy rates, and the numbers behind the bets.</p>
       </div>
 
       {!anyData && (
-        <p className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-12 text-center text-sm text-slate-500">
+        <p className="rounded-lg border border-dashed border-slate-600 bg-surface-2 px-4 py-12 text-center text-sm text-slate-500">
           Analytics fill in once players start placing predictions.
         </p>
       )}
@@ -342,13 +342,13 @@ export default function Stats() {
       {/* Personality cards */}
       {anyData && (
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-slate-900">Prediction Personalities</h2>
+          <h2 className="text-base font-semibold text-slate-100">Prediction Personalities</h2>
           <p className="text-xs text-slate-400">Based on each player's betting style across all predictions.</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {playerStats.map(({ profile, personality, played, exact, outcome, totalBets }) => (
-              <div key={profile.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div key={profile.id} className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold text-slate-900">{profile.display_name}</p>
+                  <p className="font-semibold text-slate-100">{profile.display_name}</p>
                   <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${personality.bg} ${personality.text}`}>
                     {personality.icon} {personality.label}
                   </span>
@@ -358,9 +358,9 @@ export default function Stats() {
                   {played > 0 && ` · ${played} played`}
                 </p>
                 {played > 0 && (
-                  <div className="mt-3 grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 pt-3 text-center">
+                  <div className="mt-3 grid grid-cols-3 divide-x divide-surface-4/40 border-t border-surface-4/40 pt-3 text-center">
                     <div>
-                      <p className="text-lg font-bold text-pitch-700">{exact}</p>
+                      <p className="text-lg font-bold text-pitch-400">{exact}</p>
                       <p className="text-[10px] uppercase tracking-wide text-slate-400">Exact</p>
                     </div>
                     <div>
@@ -368,7 +368,7 @@ export default function Stats() {
                       <p className="text-[10px] uppercase tracking-wide text-slate-400">Outcome</p>
                     </div>
                     <div>
-                      <p className="text-lg font-bold text-slate-700">{played}</p>
+                      <p className="text-lg font-bold text-slate-300">{played}</p>
                       <p className="text-[10px] uppercase tracking-wide text-slate-400">Played</p>
                     </div>
                   </div>
@@ -382,11 +382,11 @@ export default function Stats() {
       {/* Accuracy table */}
       {playerStats.some((s) => s.played > 0) && (
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-slate-900">Accuracy Breakdown</h2>
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+          <h2 className="text-base font-semibold text-slate-100">Accuracy Breakdown</h2>
+          <div className="overflow-x-auto rounded-xl border border-surface-4 bg-surface-2 shadow-none">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <tr className="border-b border-surface-4/40 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
                   <th className="px-4 py-3">Player</th>
                   <th className="px-3 py-3 text-right">Exact</th>
                   <th className="px-3 py-3 text-right">Outcome %</th>
@@ -398,15 +398,15 @@ export default function Stats() {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {playerStats.map(({ profile, played, exact, outcome, homePickCount, drawPickCount, awayPickCount, totalBets, totalPredictedGoals }) => (
-                  <tr key={profile.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 font-medium text-slate-900">{profile.display_name}</td>
+                  <tr key={profile.id} className="hover:bg-surface-1">
+                    <td className="px-4 py-3 font-medium text-slate-100">{profile.display_name}</td>
                     <td className="px-3 py-3 text-right tabular-nums">
-                      <span className="font-bold text-pitch-700">{exact}</span>
+                      <span className="font-bold text-pitch-400">{exact}</span>
                       <span className="ml-1 text-xs text-slate-300">/ {played}</span>
                     </td>
                     <td className="px-3 py-3 text-right tabular-nums">
                       {played > 0 ? (
-                        <span className={outcome / played > 0.5 ? 'font-semibold text-pitch-700' : 'text-slate-600'}>
+                        <span className={outcome / played > 0.5 ? 'font-semibold text-pitch-400' : 'text-slate-400'}>
                           {Math.round((outcome / played) * 100)}%
                         </span>
                       ) : <span className="text-slate-300">—</span>}
@@ -428,7 +428,7 @@ export default function Stats() {
       {/* Most contested matches */}
       {contestedMatches.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-slate-900">Most Contested Predictions</h2>
+          <h2 className="text-base font-semibold text-slate-100">Most Contested Predictions</h2>
           <p className="text-xs text-slate-400">Matches where players disagreed the most on the scoreline.</p>
           <div className="space-y-3">
             {contestedMatches.map(({ match, total, homeCount, drawCount }) => {
@@ -436,23 +436,23 @@ export default function Stats() {
               const drawPct = total > 0 ? Math.round((drawCount / total) * 100) : 0
               const awayPct = 100 - homePct - drawPct
               return (
-                <div key={match.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div key={match.id} className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <p className="font-semibold text-slate-900">
+                      <p className="font-semibold text-slate-100">
                         {match.home_team} <span className="text-slate-400">vs</span> {match.away_team}
                       </p>
                       <p className="text-xs text-slate-400">{total} player{total === 1 ? '' : 's'} predicted</p>
                     </div>
                     {match.home_score !== null && (
-                      <span className="rounded-lg bg-slate-100 px-3 py-1 text-sm font-bold tabular-nums text-slate-700">
+                      <span className="rounded-lg bg-surface-3 px-3 py-1 text-sm font-bold tabular-nums text-slate-300">
                         {match.home_score} – {match.away_score}
                       </span>
                     )}
                   </div>
                   <PickBar homePct={homePct} drawPct={drawPct} awayPct={awayPct} className="mt-3" />
                   <div className="mt-1.5 flex justify-between text-xs">
-                    <span className="text-blue-600">🏠 Home {homePct}%</span>
+                    <span className="text-blue-400">🏠 Home {homePct}%</span>
                     <span className="text-slate-400">🤝 Draw {drawPct}%</span>
                     <span className="text-orange-500">✈️ Away {awayPct}%</span>
                   </div>
@@ -466,10 +466,10 @@ export default function Stats() {
       {/* Fun facts */}
       {funFacts.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-slate-900">Fun Facts</h2>
+          <h2 className="text-base font-semibold text-slate-100">Fun Facts</h2>
           <ul className="space-y-2">
             {funFacts.map((fact, i) => (
-              <li key={i} className="flex items-start gap-3 rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-sm">
+              <li key={i} className="flex items-start gap-3 rounded-lg border border-surface-4 bg-surface-2 p-4 text-sm text-slate-300 shadow-none">
                 <span className="text-xl leading-none">{fact.icon}</span>
                 {fact.text}
               </li>
@@ -484,24 +484,24 @@ export default function Stats() {
 
       {teamAnalytics.length > 0 && (
         <>
-          <div className="border-t border-slate-200 pt-6">
-            <h1 className="text-xl font-bold text-slate-900">Tactical Intelligence</h1>
+          <div className="border-t border-surface-4 pt-6">
+            <h1 className="text-xl font-bold text-slate-100">Tactical Intelligence</h1>
             <p className="text-sm text-slate-500">
               Per-team metrics from StatsBomb WC 2022 open data — historical reference for how teams play.
-              <span className="ml-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">WC 2022</span>
+              <span className="ml-1 rounded-full bg-surface-3 px-2 py-0.5 text-xs font-medium text-slate-500">WC 2022</span>
             </p>
           </div>
 
           {/* Funny tactical takeaways */}
           {tacticalTakeaways.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-base font-semibold text-slate-900">The Verdict</h2>
+              <h2 className="text-base font-semibold text-slate-100">The Verdict</h2>
               <p className="text-xs text-slate-400">Auto-generated from the numbers. Results may be unfair to your team.</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {tacticalTakeaways.map((t, i) => (
-                  <div key={i} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <div key={i} className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
                     <div className="mb-2 text-2xl">{t.icon}</div>
-                    <p className="text-sm text-slate-700 leading-relaxed">{t.text}</p>
+                    <p className="text-sm text-slate-300 leading-relaxed">{t.text}</p>
                   </div>
                 ))}
               </div>
@@ -512,16 +512,16 @@ export default function Stats() {
           <section className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h2 className="text-base font-semibold text-slate-900">Team Fingerprints</h2>
+                <h2 className="text-base font-semibold text-slate-100">Team Fingerprints</h2>
                 <p className="text-xs text-slate-400">Click a column header to re-sort.</p>
               </div>
               <span className="text-[10px] text-slate-400">{teamAnalytics[0]?.matches_in_sample ?? '?'} matches/team avg</span>
             </div>
-            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-x-auto rounded-xl border border-surface-4 bg-surface-2 shadow-none">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-slate-100 text-left text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                    <th className="px-4 py-3 sticky left-0 bg-white">Team</th>
+                  <tr className="border-b border-surface-4/40 text-left text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                    <th className="px-4 py-3 sticky left-0 bg-surface-2">Team</th>
                     {([
                       ['avg_xg_per_match',          'xG/game',    'bg-pitch-400'],
                       ['avg_shots_per_match',        'Shots/game', 'bg-blue-400'],
@@ -533,7 +533,7 @@ export default function Stats() {
                     ] as const).map(([key, label]) => (
                       <th
                         key={key}
-                        className="px-3 py-3 text-right cursor-pointer hover:text-slate-700 select-none"
+                        className="px-3 py-3 text-right cursor-pointer hover:text-slate-300 select-none"
                         onClick={() => setTacticSort(key)}
                       >
                         {label}{tacticSort === key ? ' ↓' : ''}
@@ -549,12 +549,12 @@ export default function Stats() {
                     const maxPressure = Math.max(...teamAnalytics.map((x) => x.avg_pressures_per_match ?? 0))
                     const maxChaos    = Math.max(...teamAnalytics.map((x) => x.chaos_index ?? 0))
                     return (
-                      <tr key={t.team_name} className="hover:bg-slate-50">
-                        <td className="px-4 py-2.5 font-medium text-slate-900 sticky left-0 bg-white">{t.team_name}</td>
+                      <tr key={t.team_name} className="hover:bg-surface-1">
+                        <td className="px-4 py-2.5 font-medium text-slate-100 sticky left-0 bg-surface-2">{t.team_name}</td>
                         <td className="px-3 py-2.5 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <MetricBar value={t.avg_xg_per_match ?? 0} max={maxXg} colorClass="bg-pitch-400" />
-                            <span className="w-10 tabular-nums font-semibold text-pitch-700">{t.avg_xg_per_match?.toFixed(2) ?? '—'}</span>
+                            <span className="w-10 tabular-nums font-semibold text-pitch-400">{t.avg_xg_per_match?.toFixed(2) ?? '—'}</span>
                           </div>
                         </td>
                         <td className="px-3 py-2.5 text-right">
@@ -602,8 +602,8 @@ export default function Stats() {
       )}
 
       {teamAnalytics.length === 0 && (
-        <section className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
-          <p className="text-sm font-medium text-slate-700">Tactical analytics not yet computed</p>
+        <section className="rounded-xl border border-dashed border-slate-600 bg-surface-2 p-8 text-center">
+          <p className="text-sm font-medium text-slate-300">Tactical analytics not yet computed</p>
           <p className="mt-1 text-xs text-slate-400">
             First run StatsBomb ingestion, then hit "Compute Team Analytics" in Admin.
           </p>

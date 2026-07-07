@@ -144,15 +144,18 @@ export default function Schedule() {
     return map
   }, [standings])
 
-  // Previous WC meetings between two teams (already-played matches between them)
-  const previousMeetingMap = useMemo(() => {
+  // All finished WC meetings between two teams (may be >1 if they meet in group then knockout)
+  const previousMeetingsMap = useMemo(() => {
     const finished = matches.filter((m) => m.status === 'FINISHED')
-    const map = new Map<string, typeof finished[0] | undefined>()
+    const map = new Map<string, typeof finished>()
     for (const m of finished) {
       const key1 = `${m.home_team}|${m.away_team}`
       const key2 = `${m.away_team}|${m.home_team}`
-      map.set(key1, m)
-      map.set(key2, m)
+      for (const key of [key1, key2]) {
+        const list = map.get(key) ?? []
+        if (!list.find((x) => x.id === m.id)) list.push(m)
+        map.set(key, list)
+      }
     }
     return map
   }, [matches])
@@ -268,7 +271,7 @@ export default function Schedule() {
   if (matchesLoading || betsLoading || profilesLoading) return <Spinner label="Loading schedule…" />
 
   if (matchesError) {
-    return <p className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">Couldn't load matches: {matchesError}</p>
+    return <p className="rounded-md bg-red-950/60 px-4 py-3 text-sm text-red-400">Couldn't load matches: {matchesError}</p>
   }
 
   if (matches.length === 0) {
@@ -307,7 +310,7 @@ export default function Schedule() {
                 awayForm={teamFormMap.get(match.away_team) ?? []}
                 homeStanding={standingsByTeam.get(match.home_team)}
                 awayStanding={standingsByTeam.get(match.away_team)}
-                previousMeeting={previousMeetingMap.get(`${match.home_team}|${match.away_team}`)}
+                previousMeetings={previousMeetingsMap.get(`${match.home_team}|${match.away_team}`)}
                 prediction={predictionByMatchId.get(match.id)}
               />
             ))}
@@ -339,7 +342,7 @@ export default function Schedule() {
                     awayForm={[]}
                     homeStanding={undefined}
                     awayStanding={undefined}
-                    previousMeeting={undefined}
+                    previousMeetings={[]}
                     liveEvents={liveEventsByMatch.get(match.id)}
                     matchStats={matchStatsByMatch.get(match.id) ?? null}
                   />
@@ -357,21 +360,21 @@ function ScoringLegend() {
   return (
     <div className="space-y-2">
       <p className="text-sm text-slate-500">
-        <span className="font-semibold text-slate-700">How match points work —</span> nail the exact final score for
+        <span className="font-semibold text-slate-300">How match points work —</span> nail the exact final score for
         the most points; get the winner (or draw) right and you still bank something even when the score's off.
       </p>
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+        <div className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-2">
           <dt className="text-slate-500">Exact score</dt>
-          <dd className="text-base font-semibold text-pitch-700">3 pts</dd>
+          <dd className="text-base font-semibold text-pitch-400">3 pts</dd>
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+        <div className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-2">
           <dt className="text-slate-500">
             Right outcome <span className="font-normal text-slate-400">— win, draw or loss</span>
           </dt>
-          <dd className="text-base font-semibold text-amber-700">1 pt</dd>
+          <dd className="text-base font-semibold text-amber-400">1 pt</dd>
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+        <div className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-2">
           <dt className="text-slate-500">Wrong outcome</dt>
           <dd className="text-base font-semibold text-slate-400">0 pts</dd>
         </div>
@@ -383,12 +386,12 @@ function ScoringLegend() {
 function SectionHeading({ title, hint }: { title: string; hint: string }) {
   return (
     <div className="mb-3">
-      <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+      <h2 className="text-lg font-bold text-slate-100">{title}</h2>
       <p className="text-sm text-slate-500">{hint}</p>
     </div>
   )
 }
 
 function EmptyState({ children }: { children: React.ReactNode }) {
-  return <p className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-500">{children}</p>
+  return <p className="rounded-lg border border-dashed border-slate-600 bg-surface-2 px-4 py-8 text-center text-sm text-slate-500">{children}</p>
 }

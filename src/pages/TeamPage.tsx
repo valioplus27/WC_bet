@@ -36,8 +36,8 @@ type TeamInfo = {
 
 function MetricPair({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2.5 text-center">
-      <p className="text-lg font-bold tabular-nums text-slate-900">{value}</p>
+    <div className="rounded-lg border border-surface-4/40 bg-surface-1 px-3 py-2.5 text-center">
+      <p className="text-lg font-bold tabular-nums text-slate-100">{value}</p>
       {sub && <p className="text-[10px] tabular-nums text-slate-400">{sub}</p>}
       <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400">{label}</p>
     </div>
@@ -49,11 +49,11 @@ function FormCard({ form, title }: { form: FormWindow; title: string }) {
   const thinSample = sampleSize < windowSize
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+        <h3 className="text-sm font-semibold text-slate-100">{title}</h3>
         {thinSample && (
-          <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">
+          <span className="rounded-full bg-amber-950/50 px-2 py-0.5 text-[10px] font-medium text-amber-400">
             n={sampleSize} of {windowSize}
           </span>
         )}
@@ -66,7 +66,7 @@ function FormCard({ form, title }: { form: FormWindow; title: string }) {
           <div className="mb-4 flex items-center gap-3">
             <FormSparkline form={form} maxDots={windowSize} />
             <div className="flex items-center gap-1 text-sm">
-              <span className="font-semibold text-pitch-700">{wins}W</span>
+              <span className="font-semibold text-pitch-400">{wins}W</span>
               <span className="text-slate-300">·</span>
               <span className="font-semibold text-amber-600">{draws}D</span>
               <span className="text-slate-300">·</span>
@@ -104,8 +104,8 @@ const POSITION_ORDER = ['Goalkeeper', 'Defence', 'Midfield', 'Offence']
 function SquadSection({ players, teamInfo }: { players: Player[]; teamInfo: TeamInfo | null }) {
   if (players.length === 0) {
     return (
-      <section className="rounded-xl border border-dashed border-slate-200 bg-white p-5">
-        <h2 className="mb-1 text-sm font-semibold text-slate-900">Squad</h2>
+      <section className="rounded-xl border border-dashed border-surface-4 bg-surface-2 p-5">
+        <h2 className="mb-1 text-sm font-semibold text-slate-100">Squad</h2>
         <p className="text-xs text-slate-400">
           Not synced yet — run <strong>Sync Squads</strong> in Admin to load the registered squad.
         </p>
@@ -126,16 +126,16 @@ function SquadSection({ players, teamInfo }: { players: Player[]; teamInfo: Team
     .filter((g) => g.players.length > 0)
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-sm font-semibold text-slate-900">Squad</h2>
+          <h2 className="text-sm font-semibold text-slate-100">Squad</h2>
           <p className="text-[10px] text-slate-400">{players.length} players · click name for WC 2022 analytics</p>
         </div>
         {teamInfo?.coach_name && (
           <div className="text-right">
             <p className="text-[10px] text-slate-400">Head coach</p>
-            <p className="text-xs font-semibold text-slate-700">{teamInfo.coach_name}</p>
+            <p className="text-xs font-semibold text-slate-300">{teamInfo.coach_name}</p>
             {teamInfo.coach_nationality && (
               <p className="text-[10px] text-slate-400">{teamInfo.coach_nationality}</p>
             )}
@@ -152,13 +152,13 @@ function SquadSection({ players, teamInfo }: { players: Player[]; teamInfo: Team
                 <Link
                   key={p.id}
                   to={`/player/${encodeURIComponent(p.name)}`}
-                  className="flex items-center gap-1.5 rounded-md bg-slate-50 px-2.5 py-1.5 text-xs hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-1.5 rounded-md bg-surface-1 px-2.5 py-1.5 text-xs hover:bg-surface-3 transition-colors"
                 >
                   {p.shirt_number != null && (
                     <span className="w-5 shrink-0 text-right font-mono text-[10px] text-slate-400">{p.shirt_number}</span>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-slate-800">{p.name}</p>
+                    <p className="truncate font-medium text-slate-200">{p.name}</p>
                     {p.nationality && (
                       <p className="truncate text-[10px] text-slate-400">{p.nationality}</p>
                     )}
@@ -185,19 +185,19 @@ function RecentMatchRow({ match, teamName }: { match: TeamDetail['recent'][0]; t
   const result   = gf !== undefined && ga !== undefined
     ? gf > ga ? 'W' : gf === ga ? 'D' : 'L'
     : null
-  const cls: Record<string, string> = { W: 'text-pitch-700', D: 'text-amber-600', L: 'text-red-600' }
+  const cls: Record<string, string> = { W: 'text-pitch-400', D: 'text-amber-600', L: 'text-red-600' }
 
   return (
     <Link
       to={`/match/${match.id}`}
-      className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 bg-white px-3 py-2.5 text-sm hover:border-slate-200"
+      className="flex items-center justify-between gap-3 rounded-lg border border-surface-4/40 bg-surface-2 px-3 py-2.5 text-sm hover:border-surface-4"
     >
       <span className={`w-4 shrink-0 font-bold ${result ? cls[result] : 'text-slate-400'}`}>{result ?? '?'}</span>
-      <span className="flex-1 truncate text-slate-700">
+      <span className="flex-1 truncate text-slate-300">
         {isHome ? '🏠' : '✈️'} vs {opponent}
       </span>
       {gf !== undefined && ga !== undefined && (
-        <span className="shrink-0 font-semibold tabular-nums text-slate-900">{gf}–{ga}</span>
+        <span className="shrink-0 font-semibold tabular-nums text-slate-100">{gf}–{ga}</span>
       )}
       <span className="shrink-0 text-[10px] text-slate-400">{formatKickoff(match.kickoffAt)}</span>
     </Link>
@@ -260,9 +260,9 @@ export default function TeamPage() {
       <div>
         <Link to="/calendar" className="text-xs text-pitch-600 hover:underline">← Calendar</Link>
         <div className="mt-2 flex items-baseline gap-3">
-          <h1 className="text-2xl font-black text-slate-900">{team.name}</h1>
+          <h1 className="text-2xl font-black text-slate-100">{team.name}</h1>
           {teamInfo?.tla && (
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-mono text-slate-500">{teamInfo.tla}</span>
+            <span className="rounded bg-surface-3 px-1.5 py-0.5 text-xs font-mono text-slate-500">{teamInfo.tla}</span>
           )}
           <FormBadges form={form5} n={5} />
         </div>
@@ -281,7 +281,7 @@ export default function TeamPage() {
       {/* Upcoming fixtures */}
       {upcoming.length > 0 && (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-slate-900">Upcoming fixtures</h2>
+          <h2 className="text-sm font-semibold text-slate-100">Upcoming fixtures</h2>
           {upcoming.map((m) => (
             <MatchRow key={m.id} match={m} />
           ))}
@@ -291,7 +291,7 @@ export default function TeamPage() {
       {/* Recent results */}
       {recent.length > 0 && (
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-slate-900">Recent results</h2>
+          <h2 className="text-sm font-semibold text-slate-100">Recent results</h2>
           {recent.map((m) => (
             <RecentMatchRow key={m.id} match={m} teamName={team.name} />
           ))}
@@ -299,7 +299,7 @@ export default function TeamPage() {
       )}
 
       {recent.length === 0 && upcoming.length === 0 && (
-        <p className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-10 text-center text-sm text-slate-400">
+        <p className="rounded-xl border border-dashed border-slate-600 bg-surface-2 px-4 py-10 text-center text-sm text-slate-400">
           No matches found for this team.
         </p>
       )}

@@ -59,12 +59,12 @@ function DayNav({
           type="button"
           onClick={onPrev}
           aria-label="Previous day"
-          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+          className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-1.5 text-sm font-medium text-slate-400 hover:border-slate-600 hover:bg-surface-1"
         >
           ←
         </button>
         <div className="flex-1 text-center">
-          <p className="text-base font-bold text-slate-900">{formatHeader(date)}</p>
+          <p className="text-base font-bold text-slate-100">{formatHeader(date)}</p>
           {!isToday && (
             <button type="button" onClick={onToday} className="text-xs text-pitch-600 hover:underline">
               Today
@@ -75,7 +75,7 @@ function DayNav({
           type="button"
           onClick={onNext}
           aria-label="Next day"
-          className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+          className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-1.5 text-sm font-medium text-slate-400 hover:border-slate-600 hover:bg-surface-1"
         >
           →
         </button>
@@ -84,7 +84,7 @@ function DayNav({
         type="date"
         value={date}
         onChange={(e) => { if (e.target.value) onDateChange(e.target.value) }}
-        className="block w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 focus:border-pitch-500 focus:outline-none focus:ring-1 focus:ring-pitch-500"
+        className="block w-full rounded-lg border border-surface-4 bg-surface-2 px-3 py-2 text-sm text-slate-300 focus:border-pitch-500 focus:outline-none focus:ring-1 focus:ring-pitch-500"
       />
     </div>
   )
@@ -125,7 +125,7 @@ export default function Calendar() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <h1 className="text-lg font-bold text-slate-900">Match calendar</h1>
+        <h1 className="text-lg font-bold text-slate-100">Match calendar</h1>
         <p className="text-sm text-slate-500">Browse every match day. Click a match for full stats and events.</p>
       </div>
 
@@ -140,7 +140,7 @@ export default function Calendar() {
       {loading ? (
         <Spinner label="Loading…" />
       ) : matches.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-12 text-center">
+        <div className="rounded-xl border border-dashed border-slate-600 bg-surface-2 px-4 py-12 text-center">
           <p className="text-sm font-semibold text-slate-500">No matches on this date.</p>
           <p className="mt-1 text-xs text-slate-400">
             WC 2026 runs 11 Jun – 19 Jul 2026 (UTC). Use the arrows to navigate to a match day.

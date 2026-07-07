@@ -13,6 +13,7 @@ import Leaderboard from './pages/Leaderboard'
 import Admin from './pages/Admin'
 import Scorers from './pages/Scorers'
 import Stats from './pages/Stats'
+import Analytics from './pages/Analytics'
 import Bracket from './pages/Bracket'
 import MatchAnalysis from './pages/MatchAnalysis'
 import Calendar from './pages/Calendar'
@@ -74,6 +75,7 @@ function AppRoutes() {
         <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="scorers" element={<Scorers />} />
         <Route path="stats" element={<Stats />} />
+        <Route path="analytics" element={<Analytics />} />
         <Route path="bracket" element={<Bracket />} />
         <Route path="analysis" element={<MatchAnalysis />} />
         <Route path="calendar" element={<Calendar />} />

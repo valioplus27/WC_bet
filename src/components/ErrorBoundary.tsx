@@ -18,9 +18,9 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.error) {
       if (this.props.fallback) return this.props.fallback(this.state.error)
       return (
-        <div className="mx-auto max-w-2xl rounded-xl border border-red-200 bg-red-50 p-6 mt-8">
-          <p className="font-semibold text-red-800">Something went wrong rendering this page.</p>
-          <pre className="mt-3 overflow-auto rounded bg-red-100 p-3 text-xs text-red-700">
+        <div className="mx-auto max-w-2xl rounded-xl border border-red-800 bg-red-950/60 p-6 mt-8">
+          <p className="font-semibold text-red-300">Something went wrong rendering this page.</p>
+          <pre className="mt-3 overflow-auto rounded bg-red-100 p-3 text-xs text-red-400">
             {this.state.error.message}
             {'\n\n'}
             {this.state.error.stack}

@@ -27,7 +27,7 @@ export type FormResult = {
 // ---------------------------------------------------------------------------
 
 const RESULT_STYLES = {
-  W: 'bg-pitch-500 text-white',
+  W: 'bg-pitch-600/100 text-white',
   D: 'bg-slate-400 text-white',
   L: 'bg-red-400 text-white',
 } as const
@@ -45,11 +45,11 @@ function FormBadge({ r, title }: { r: FormResult; title: string }) {
 
 function StandingRow({ s }: { s: Standing }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600">
-      <span className="font-bold tabular-nums text-slate-900">{s.position}</span>
+    <div className="flex items-center gap-2 rounded-lg bg-surface-1 px-2.5 py-1.5 text-xs text-slate-400">
+      <span className="font-bold tabular-nums text-slate-100">{s.position}</span>
       <span className="truncate">{s.group_name}</span>
       <span className="ml-auto flex gap-2 tabular-nums text-slate-400">
-        <span title="Points" className="font-semibold text-slate-700">{s.points} pts</span>
+        <span title="Points" className="font-semibold text-slate-300">{s.points} pts</span>
         <span title="Played">{s.played}GP</span>
         <span title="Won" className="text-pitch-600">{s.won}W</span>
         <span title="Drawn">{s.draw}D</span>
@@ -72,18 +72,99 @@ type Props = {
   awayForm: FormResult[]
   homeStanding: Standing | undefined
   awayStanding: Standing | undefined
-  /** Previous WC meeting between these two teams (if any) */
-  previousMeeting: Match | undefined
+  /** All finished WC 2026 meetings between these teams (may be empty) */
+  previousMeetings?: Match[]
 }
 
-export function MatchPreview({ match, homeForm, awayForm, homeStanding, awayStanding, previousMeeting }: Props) {
+function H2HSection({ homeTeam, awayTeam, meetings }: { homeTeam: string; awayTeam: string; meetings: Match[] }) {
+  if (meetings.length === 0) return null
+
+  let homeWins = 0, draws = 0, awayWins = 0, homeGoals = 0, awayGoals = 0
+  for (const m of meetings) {
+    if (m.home_score === null || m.away_score === null) continue
+    // Normalise: figure out home vs away relative to the UPCOMING match
+    const flip = m.home_team === awayTeam
+    const hg = flip ? m.away_score : m.home_score
+    const ag = flip ? m.home_score : m.away_score
+    homeGoals += hg; awayGoals += ag
+    if (hg > ag) homeWins++
+    else if (hg < ag) awayWins++
+    else draws++
+  }
+
+  const shortHome = homeTeam.split(' ').slice(-1)[0]
+  const shortAway = awayTeam.split(' ').slice(-1)[0]
+
+  return (
+    <div className="rounded-lg border border-surface-4 bg-surface-1 px-3 py-2.5 text-xs">
+      <p className="mb-2 font-semibold uppercase tracking-wide text-slate-400">
+        Head-to-head · WC 2026
+      </p>
+      {/* Win/draw/loss bar */}
+      <div className="mb-1.5 flex items-center gap-1.5">
+        <span className="w-16 text-right font-semibold text-slate-200">{shortHome}</span>
+        <div className="flex flex-1 overflow-hidden rounded-full">
+          {homeWins > 0 && (
+            <div
+              style={{ width: `${(homeWins / meetings.length) * 100}%` }}
+              className="bg-blue-500 text-center text-[10px] font-bold leading-4 text-white"
+            >{homeWins}</div>
+          )}
+          {draws > 0 && (
+            <div
+              style={{ width: `${(draws / meetings.length) * 100}%` }}
+              className="bg-slate-500 text-center text-[10px] font-bold leading-4 text-white"
+            >{draws}</div>
+          )}
+          {awayWins > 0 && (
+            <div
+              style={{ width: `${(awayWins / meetings.length) * 100}%` }}
+              className="bg-orange-500 text-center text-[10px] font-bold leading-4 text-white"
+            >{awayWins}</div>
+          )}
+        </div>
+        <span className="w-16 font-semibold text-slate-200">{shortAway}</span>
+      </div>
+      <div className="flex justify-between text-[10px] text-slate-500">
+        <span className="text-blue-400">{homeWins}W · {homeGoals}G</span>
+        <span>{draws} draw{draws !== 1 ? 's' : ''}</span>
+        <span className="text-orange-400">{awayGoals}G · {awayWins}W</span>
+      </div>
+
+      {/* Individual meetings */}
+      <div className="mt-2 space-y-1 border-t border-surface-4/40 pt-2">
+        {meetings.map((m) => {
+          if (m.home_score === null || m.away_score === null) return null
+          const flip = m.home_team === awayTeam
+          const displayHome = flip ? m.away_team : m.home_team
+          const displayAway = flip ? m.home_team : m.away_team
+          const hg = flip ? m.away_score : m.home_score
+          const ag = flip ? m.home_score : m.away_score
+          return (
+            <div key={m.id} className="flex items-center justify-between gap-2 text-slate-400">
+              <span className="truncate text-[10px]">
+                {stageLabel(m.stage)}
+                {m.group_name ? ` · ${m.group_name}` : ''}
+              </span>
+              <span className="font-bold tabular-nums text-slate-200">
+                {displayHome.split(' ').slice(-1)[0]} {hg}–{ag} {displayAway.split(' ').slice(-1)[0]}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+export function MatchPreview({ match, homeForm, awayForm, homeStanding, awayStanding, previousMeetings = [] }: Props) {
   const homeTeam = match.home_team
   const awayTeam = match.away_team
 
   if (homeTeam === 'TBD' && awayTeam === 'TBD') return null
 
   return (
-    <div className="mt-4 space-y-4 border-t border-slate-100 pt-4">
+    <div className="mt-4 space-y-4 border-t border-surface-4/40 pt-4">
       {/* Form */}
       <div className="grid grid-cols-2 gap-3">
         {[
@@ -113,7 +194,6 @@ export function MatchPreview({ match, homeForm, awayForm, homeStanding, awayStan
                     })}
                   </div>
                 )}
-                {/* Most recent form result text */}
                 {form.length > 0 && (
                   <p className="text-[10px] text-slate-400 leading-tight">
                     {form.slice(0, 3).map((r, i) => (
@@ -135,22 +215,8 @@ export function MatchPreview({ match, homeForm, awayForm, homeStanding, awayStan
         ))}
       </div>
 
-      {/* Previous meeting in this WC */}
-      {previousMeeting && previousMeeting.home_score !== null && (
-        <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 text-xs">
-          <p className="font-semibold text-amber-700">Previous meeting in WC 2026</p>
-          <div className="mt-1 flex items-center justify-between gap-2 text-slate-700">
-            <span>{previousMeeting.home_team}</span>
-            <span className="font-bold tabular-nums">
-              {previousMeeting.home_score} – {previousMeeting.away_score}
-            </span>
-            <span>{previousMeeting.away_team}</span>
-          </div>
-          <p className="mt-0.5 text-slate-400">
-            {stageLabel(previousMeeting.stage)} · {formatKickoff(previousMeeting.kickoff_at)}
-          </p>
-        </div>
-      )}
+      {/* H2H section */}
+      <H2HSection homeTeam={homeTeam} awayTeam={awayTeam} meetings={previousMeetings.filter((m) => m.home_score !== null)} />
     </div>
   )
 }

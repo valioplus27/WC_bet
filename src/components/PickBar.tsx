@@ -14,7 +14,7 @@ export function PickBar({
   return (
     <div className={`flex h-5 overflow-hidden rounded-full text-[10px] font-bold text-white ${className}`}>
       {homePct > 0 && (
-        <div style={{ width: `${homePct}%` }} className="flex items-center justify-center bg-blue-500 transition-all">
+        <div style={{ width: `${homePct}%` }} className="flex items-center justify-center bg-blue-950/500 transition-all">
           {homePct >= 15 ? `${homePct}%` : ''}
         </div>
       )}

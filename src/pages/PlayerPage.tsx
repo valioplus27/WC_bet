@@ -63,7 +63,7 @@ function ShotCloud({ shots }: { shots: Shot[] }) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold text-slate-600">Shot map</p>
+      <p className="text-xs font-semibold text-slate-400">Shot map</p>
       <svg
         viewBox={`0 0 ${HALF_W} ${HALF_H}`}
         className="w-full rounded-lg overflow-hidden"
@@ -135,10 +135,10 @@ function ShotCloud({ shots }: { shots: Shot[] }) {
       </svg>
       {shots.length > 0 && (
         <div className="flex gap-4 text-xs text-slate-500">
-          <span><span className="font-semibold text-slate-900">{shots.length}</span> shots</span>
-          <span><span className="font-semibold text-slate-900">{goals.length}</span> goals</span>
-          <span>xG <span className="font-semibold text-slate-900">{totalXg.toFixed(2)}</span></span>
-          <span>xG/shot <span className="font-semibold text-slate-900">{shots.length > 0 ? (totalXg / shots.length).toFixed(3) : '—'}</span></span>
+          <span><span className="font-semibold text-slate-100">{shots.length}</span> shots</span>
+          <span><span className="font-semibold text-slate-100">{goals.length}</span> goals</span>
+          <span>xG <span className="font-semibold text-slate-100">{totalXg.toFixed(2)}</span></span>
+          <span>xG/shot <span className="font-semibold text-slate-100">{shots.length > 0 ? (totalXg / shots.length).toFixed(3) : '—'}</span></span>
         </div>
       )}
     </div>
@@ -195,8 +195,8 @@ function HalfPitchLines() {
 
 function StatChip({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-center">
-      <p className="text-base font-bold tabular-nums text-slate-900">{value}</p>
+    <div className="rounded-lg border border-surface-4/40 bg-surface-1 px-3 py-2 text-center">
+      <p className="text-base font-bold tabular-nums text-slate-100">{value}</p>
       <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400">{label}</p>
     </div>
   )
@@ -289,10 +289,10 @@ export default function PlayerPage() {
       <div>
         <Link to="/standings" className="text-xs text-pitch-600 hover:underline">← Standings</Link>
         <div className="mt-2">
-          <h1 className="text-2xl font-black text-slate-900">{playerName || 'Player'}</h1>
+          <h1 className="text-2xl font-black text-slate-100">{playerName || 'Player'}</h1>
           {stats.team && <p className="mt-0.5 text-sm text-slate-500">{stats.team}</p>}
         </div>
-        <p className="mt-1 rounded-md bg-amber-50 px-3 py-1.5 text-xs text-amber-700 border border-amber-200 inline-block">
+        <p className="mt-1 rounded-md bg-amber-950/50 px-3 py-1.5 text-xs text-amber-400 border border-amber-800 inline-block">
           StatsBomb open data · WC 2022 historical — not WC 2026 live data
         </p>
       </div>
@@ -300,8 +300,8 @@ export default function PlayerPage() {
       {loading ? (
         <Spinner label="Loading analytics…" />
       ) : !hasData ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-          <p className="text-sm font-semibold text-slate-700">No data found for "{playerName}"</p>
+        <div className="rounded-xl border border-dashed border-slate-600 bg-surface-2 px-6 py-12 text-center">
+          <p className="text-sm font-semibold text-slate-300">No data found for "{playerName}"</p>
           <p className="mt-1 text-xs text-slate-400">
             StatsBomb open data covers select WC 2022 matches. Try a different spelling.
           </p>
@@ -313,7 +313,7 @@ export default function PlayerPage() {
         <>
           {/* Key stats */}
           <section>
-            <h2 className="mb-3 text-sm font-semibold text-slate-900">
+            <h2 className="mb-3 text-sm font-semibold text-slate-100">
               Summary
               {stats.matchCount > 0 && (
                 <span className="ml-2 text-xs font-normal text-slate-400">
@@ -333,8 +333,8 @@ export default function PlayerPage() {
 
           {/* Position heatmap */}
           {allPositions.length > 0 && (
-            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-3 text-sm font-semibold text-slate-900">Position heatmap</h2>
+            <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+              <h2 className="mb-3 text-sm font-semibold text-slate-100">Position heatmap</h2>
               <p className="mb-3 text-xs text-slate-400">
                 All {allPositions.length} events plotted on pitch. Darker red = higher activity zone. Attacking left→right.
               </p>
@@ -344,8 +344,8 @@ export default function PlayerPage() {
 
           {/* Passing network (ego) */}
           {playerNetwork && (
-            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-3 text-sm font-semibold text-slate-900">Passing network</h2>
+            <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+              <h2 className="mb-3 text-sm font-semibold text-slate-100">Passing network</h2>
               <p className="mb-3 text-xs text-slate-400">
                 Who {playerName.split(' ').pop()} exchanged passes with. Yellow = the player. Blue lines = sent, orange = received. Thickness = frequency.
               </p>
@@ -355,8 +355,8 @@ export default function PlayerPage() {
 
           {/* Pass map */}
           {passMoves.length > 0 && (
-            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-3 text-sm font-semibold text-slate-900">Pass map</h2>
+            <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+              <h2 className="mb-3 text-sm font-semibold text-slate-100">Pass map</h2>
               <p className="mb-3 text-xs text-slate-400">
                 Yellow dot = average position. Blue arrows = forward passes; orange = backward. Thickness = frequency.
               </p>
@@ -366,8 +366,8 @@ export default function PlayerPage() {
 
           {/* Pressure heatmap (defenders/midfielders) */}
           {pressurePositions.length > 20 && (
-            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-3 text-sm font-semibold text-slate-900">Pressing heatmap</h2>
+            <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+              <h2 className="mb-3 text-sm font-semibold text-slate-100">Pressing heatmap</h2>
               <p className="mb-3 text-xs text-slate-400">
                 Where {playerName.split(' ').pop()} applied pressure on the ball — darker red = higher pressing zone.
               </p>
@@ -377,8 +377,8 @@ export default function PlayerPage() {
 
           {/* Shot map */}
           {shots.length > 0 && (
-            <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-3 text-sm font-semibold text-slate-900">Shot locations</h2>
+            <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+              <h2 className="mb-3 text-sm font-semibold text-slate-100">Shot locations</h2>
               <p className="mb-3 text-xs text-slate-400">
                 Shown from shooting perspective. Circle size = xG.
               </p>
@@ -387,8 +387,8 @@ export default function PlayerPage() {
           )}
 
           {/* Event breakdown */}
-          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-3 text-sm font-semibold text-slate-900">Event breakdown</h2>
+          <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+            <h2 className="mb-3 text-sm font-semibold text-slate-100">Event breakdown</h2>
             <EventBreakdown events={events} shots={shots} />
           </section>
         </>
@@ -411,14 +411,14 @@ function EventBreakdown({ events, shots }: { events: MatchEvent[]; shots: Shot[]
     <div className="space-y-1.5">
       {entries.map(([type, count]) => (
         <div key={type} className="flex items-center gap-3 text-xs">
-          <span className="w-36 shrink-0 truncate text-slate-600">{type}</span>
-          <div className="flex-1 overflow-hidden rounded-full bg-slate-100 h-1.5">
+          <span className="w-36 shrink-0 truncate text-slate-400">{type}</span>
+          <div className="flex-1 overflow-hidden rounded-full bg-surface-3 h-1.5">
             <div
-              className="h-1.5 rounded-full bg-pitch-500"
+              className="h-1.5 rounded-full bg-pitch-600/100"
               style={{ width: `${(count / max) * 100}%` }}
             />
           </div>
-          <span className="w-8 text-right tabular-nums font-semibold text-slate-700">{count}</span>
+          <span className="w-8 text-right tabular-nums font-semibold text-slate-300">{count}</span>
         </div>
       ))}
       {shots.length > 0 && (

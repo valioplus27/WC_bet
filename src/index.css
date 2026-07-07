@@ -1,11 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  --color-pitch-50: #f0fdf4;
+  /* Pitch / accent green */
+  --color-pitch-50:  #f0fdf4;
+  --color-pitch-100: #dcfce7;
+  --color-pitch-300: #86efac;
+  --color-pitch-400: #4ade80;
+  --color-pitch-500: #22c55e;
   --color-pitch-600: #16a34a;
   --color-pitch-700: #15803d;
+
+  /* Dark-slate surface scale */
+  --color-surface-0:  #070d1a;   /* deepest bg */
+  --color-surface-1:  #0f172a;   /* main page bg (slate-900) */
+  --color-surface-2:  #1e293b;   /* cards / panels (slate-800) */
+  --color-surface-3:  #293548;   /* elevated / hover */
+  --color-surface-4:  #334155;   /* borders / inputs (slate-700) */
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-surface-1 text-slate-100 antialiased;
 }
+
+/* Dark-mode inputs — apply globally so components don't have to spell it out */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select,
+textarea {
+  @apply bg-surface-2 text-slate-100;
+  color-scheme: dark;
+}
+input::placeholder, textarea::placeholder { @apply text-slate-500; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-surface-4 rounded; }
+::-webkit-scrollbar-thumb:hover { @apply bg-slate-500; }

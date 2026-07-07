@@ -12,7 +12,7 @@ import { MatchStatsBar } from './MatchStatsBar'
 const REACTION_EMOJIS = EMOJIS
 
 function statusBadge(match: Match, locked: boolean): { label: string; className: string } | null {
-  return matchStatusBadge(match.status) ?? (locked ? { label: 'Awaiting kickoff sync', className: 'bg-slate-100 text-slate-500' } : null)
+  return matchStatusBadge(match.status) ?? (locked ? { label: 'Awaiting kickoff sync', className: 'bg-surface-3 text-slate-500' } : null)
 }
 
 /** Two-digit score box — also reused by the admin's manual result-override form. */
@@ -38,14 +38,14 @@ export function ScoreInput({
         if (next === '' || /^\d{0,2}$/.test(next)) onChange(next)
       }}
       placeholder="–"
-      className="h-10 w-12 rounded-md border border-slate-300 text-center text-lg font-semibold tabular-nums shadow-sm focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+      className="h-10 w-12 rounded-md border border-slate-600 text-center text-lg font-semibold tabular-nums shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
     />
   )
 }
 
 function PointsPill({ points }: { points: number }) {
   const className =
-    points >= 3 ? 'bg-pitch-50 text-pitch-700' : points >= 1 ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-500'
+    points >= 3 ? 'bg-pitch-600/10 text-pitch-400' : points >= 1 ? 'bg-amber-950/50 text-amber-400' : 'bg-surface-3 text-slate-500'
   return <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${className}`}>+{points} pt{points === 1 ? '' : 's'}</span>
 }
 
@@ -54,10 +54,10 @@ function BetSummary({ bet, match }: { bet: Bet | null; match: Match }) {
     return <p className="text-xs text-slate-400">You didn't place a prediction before this one locked.</p>
   }
   return (
-    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
       <span>
         Your prediction:{' '}
-        <span className="font-semibold tabular-nums text-slate-900">
+        <span className="font-semibold tabular-nums text-slate-100">
           {bet.predicted_home}–{bet.predicted_away}
         </span>
       </span>
@@ -86,11 +86,11 @@ function PickDistribution({ bets }: { bets: Bet[] }) {
   const awayPct = 100 - homePct - drawPct
 
   return (
-    <div className="mt-3 space-y-1.5 border-t border-slate-100 pt-3">
+    <div className="mt-3 space-y-1.5 border-t border-surface-4/40 pt-3">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Pick split — {total} player{total === 1 ? '' : 's'}</p>
       <PickBar homePct={homePct} drawPct={drawPct} awayPct={awayPct} />
       <div className="flex justify-between text-[10px] text-slate-400">
-        <span className="text-blue-500">🏠 {homePct}%</span>
+        <span className="text-blue-400">🏠 {homePct}%</span>
         <span>🤝 {drawPct}%</span>
         <span className="text-orange-400">✈️ {awayPct}%</span>
       </div>
@@ -119,7 +119,7 @@ function EmojiReactions({
   const myEmoji = reactions.find((r) => r.user_id === myUserId)?.emoji
 
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-slate-100 pt-3">
+    <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-surface-4/40 pt-3">
       {REACTION_EMOJIS.map((emoji) => {
         const count = counts.get(emoji) ?? 0
         const isMe = myEmoji === emoji
@@ -130,8 +130,8 @@ function EmojiReactions({
             onClick={() => onToggle(matchId, emoji)}
             className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-sm transition ${
               isMe
-                ? 'border-pitch-300 bg-pitch-50 text-pitch-700'
-                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                ? 'border-pitch-600/50 bg-pitch-600/10 text-pitch-400'
+                : 'border-surface-4 bg-surface-2 text-slate-400 hover:border-slate-600 hover:bg-surface-1'
             }`}
           >
             {emoji}
@@ -159,18 +159,18 @@ function ModelProbBar({ pred, homeTeam, awayTeam }: { pred: Prediction; homeTeam
     label = 'Evenly matched'
   }
   return (
-    <div className="mt-3 space-y-1 border-t border-slate-100 pt-3">
+    <div className="mt-3 space-y-1 border-t border-surface-4/40 pt-3">
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Model prediction</p>
-        <p className="text-[11px] font-semibold text-slate-600">{label}</p>
+        <p className="text-[11px] font-semibold text-slate-400">{label}</p>
       </div>
       <div className="flex h-2 overflow-hidden rounded-full">
-        <div style={{ width: `${hw}%` }} className="bg-blue-500" title={`${homeTeam} ${hw}%`} />
+        <div style={{ width: `${hw}%` }} className="bg-blue-950/500" title={`${homeTeam} ${hw}%`} />
         <div style={{ width: `${d}%` }} className="bg-slate-200" title={`Draw ${d}%`} />
         <div style={{ width: `${aw}%` }} className="bg-orange-400" title={`${awayTeam} ${aw}%`} />
       </div>
       <div className="flex justify-between text-[10px] tabular-nums text-slate-400">
-        <span className="text-blue-600">{hw}%</span>
+        <span className="text-blue-400">{hw}%</span>
         <span>Draw {d}%</span>
         <span className="text-orange-500">{aw}%</span>
       </div>
@@ -191,13 +191,13 @@ type Props = {
   awayForm: FormResult[]
   homeStanding: Standing | undefined
   awayStanding: Standing | undefined
-  previousMeeting: Match | undefined
+  previousMeetings?: Match[]
   liveEvents?: MatchEventLive[]
   matchStats?: MatchStats | null
   prediction?: Prediction
 }
 
-export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, reactions, myUserId, onReactionToggle, homeForm, awayForm, homeStanding, awayStanding, previousMeeting, liveEvents, matchStats, prediction }: Props) {
+export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, reactions, myUserId, onReactionToggle, homeForm, awayForm, homeStanding, awayStanding, previousMeetings = [], liveEvents, matchStats, prediction }: Props) {
   const formId = useId()
   const locked = isLocked(match.kickoff_at)
   const [home, setHome] = useState(myBet ? String(myBet.predicted_home) : '')
@@ -222,7 +222,7 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
   }
 
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <article className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
       <header className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
         <span>
           {stageLabel(match.stage)}
@@ -230,8 +230,8 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
         </span>
         <div className="flex items-center gap-2">
           {match.status === 'IN_PLAY' ? (
-            <span className="flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-red-700">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
+            <span className="flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-red-400">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-950/600" />
               Live
             </span>
           ) : badge ? (
@@ -242,16 +242,16 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
       </header>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-        <p className="truncate text-right text-sm font-semibold text-slate-900 sm:text-base">{match.home_team}</p>
+        <p className="truncate text-right text-sm font-semibold text-slate-100 sm:text-base">{match.home_team}</p>
 
         {hasResult ? (
-          <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-lg font-bold tabular-nums ${match.status === 'IN_PLAY' || match.status === 'PAUSED' ? 'bg-red-50 text-red-900 ring-1 ring-red-200' : 'bg-slate-100 text-slate-900'}`}>
+          <div className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-lg font-bold tabular-nums ${match.status === 'IN_PLAY' || match.status === 'PAUSED' ? 'bg-red-950/60 text-red-900 ring-1 ring-red-200' : 'bg-surface-3 text-slate-100'}`}>
             <span>{match.home_score}</span>
             <span className={match.status === 'IN_PLAY' || match.status === 'PAUSED' ? 'text-red-300' : 'text-slate-400'}>–</span>
             <span>{match.away_score}</span>
           </div>
         ) : locked ? (
-          <div className="rounded-lg bg-slate-50 px-4 py-1.5 text-sm text-slate-400">vs</div>
+          <div className="rounded-lg bg-surface-1 px-4 py-1.5 text-sm text-slate-400">vs</div>
         ) : (
           <form id={formId} onSubmit={handleSubmit} className="flex items-center gap-1.5">
             <ScoreInput value={home} onChange={setHome} ariaLabel={`${match.home_team} predicted score`} />
@@ -260,10 +260,10 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
           </form>
         )}
 
-        <p className="truncate text-sm font-semibold text-slate-900 sm:text-base">{match.away_team}</p>
+        <p className="truncate text-sm font-semibold text-slate-100 sm:text-base">{match.away_team}</p>
       </div>
 
-      <footer className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
+      <footer className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-surface-4/40 pt-3">
         {locked ? (
           <BetSummary bet={myBet} match={match} />
         ) : (
@@ -273,7 +273,7 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
               type="submit"
               form={formId}
               disabled={!canSubmit}
-              className="rounded-md bg-pitch-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-pitch-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md bg-pitch-600 px-3 py-1.5 text-xs font-semibold text-white shadow-none transition hover:bg-pitch-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving ? 'Saving…' : myBet ? 'Update prediction' : 'Save prediction'}
             </button>
@@ -282,7 +282,7 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
       </footer>
 
       {feedback && (
-        <p className={`mt-2 text-xs ${feedback.kind === 'error' ? 'text-red-600' : 'text-pitch-700'}`} role="status">
+        <p className={`mt-2 text-xs ${feedback.kind === 'error' ? 'text-red-600' : 'text-pitch-400'}`} role="status">
           {feedback.message}
         </p>
       )}
@@ -298,7 +298,7 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
           awayForm={awayForm}
           homeStanding={homeStanding}
           awayStanding={awayStanding}
-          previousMeeting={previousMeeting}
+          previousMeetings={previousMeetings}
         />
       )}
 
@@ -358,14 +358,14 @@ function EveryonesPicks({ matchId, profiles }: { matchId: number; profiles: Prof
         onClick={() => void handleToggle()}
         disabled={loading}
         aria-expanded={open}
-        className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 transition hover:text-slate-600 disabled:cursor-wait disabled:opacity-60"
+        className="inline-flex items-center gap-1 text-xs font-semibold text-slate-400 transition hover:text-slate-400 disabled:cursor-wait disabled:opacity-60"
       >
         {open ? 'Hide' : 'Show'} everyone's picks
         <span className="text-[10px] font-normal">{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
-        <div className="mt-2 rounded-lg bg-slate-50 p-3">
+        <div className="mt-2 rounded-lg bg-surface-1 p-3">
           {loading ? (
             <p className="text-xs text-slate-400">Loading picks…</p>
           ) : error ? (
@@ -374,17 +374,17 @@ function EveryonesPicks({ matchId, profiles }: { matchId: number; profiles: Prof
             <ul className="space-y-1.5">
               {rows.map(({ profile, bet }) => (
                 <li key={profile.id} className="flex items-center justify-between gap-3 text-xs">
-                  <span className="truncate text-slate-600">
+                  <span className="truncate text-slate-400">
                     {profile.display_name}
                     {profile.id === myId && (
-                      <span className="ml-1.5 rounded-full bg-pitch-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-pitch-700">
+                      <span className="ml-1.5 rounded-full bg-pitch-600/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-pitch-400">
                         You
                       </span>
                     )}
                   </span>
                   {bet ? (
                     <span className="flex shrink-0 items-center gap-2">
-                      <span className="font-semibold tabular-nums text-slate-900">
+                      <span className="font-semibold tabular-nums text-slate-100">
                         {bet.predicted_home}–{bet.predicted_away}
                       </span>
                       {bet.points_awarded !== null && <PointsPill points={bet.points_awarded} />}

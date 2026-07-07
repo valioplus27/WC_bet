@@ -61,7 +61,7 @@ function SquadList({ players, color }: { players: Player[]; color: 'blue' | 'ora
     .map((pos) => ({ pos, players: byPos.get(pos) ?? [] }))
     .filter((g) => g.players.length > 0)
 
-  const colorCls = color === 'blue' ? 'text-blue-600' : 'text-orange-500'
+  const colorCls = color === 'blue' ? 'text-blue-400' : 'text-orange-500'
 
   return (
     <div className="space-y-3">
@@ -73,12 +73,12 @@ function SquadList({ players, color }: { players: Player[]; color: 'blue' | 'ora
               <Link
                 key={p.id}
                 to={`/player/${encodeURIComponent(p.name)}`}
-                className="flex items-center gap-1.5 rounded-md bg-slate-50 px-2 py-1.5 text-xs hover:bg-slate-100 transition-colors"
+                className="flex items-center gap-1.5 rounded-md bg-surface-1 px-2 py-1.5 text-xs hover:bg-surface-3 transition-colors"
               >
                 {p.shirt_number != null && (
                   <span className="w-4 shrink-0 text-right font-mono text-[10px] text-slate-400">{p.shirt_number}</span>
                 )}
-                <span className="truncate font-medium text-slate-800">{p.name}</span>
+                <span className="truncate font-medium text-slate-200">{p.name}</span>
               </Link>
             ))}
           </div>
@@ -111,8 +111,8 @@ function EventTimeline({ match }: { match: Detail }) {
   if (events.length === 0) return null
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="mb-3 text-sm font-semibold text-slate-900">Match events</h2>
+    <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+      <h2 className="mb-3 text-sm font-semibold text-slate-100">Match events</h2>
       <div className="relative space-y-0">
         {events.map((ev, i) => {
           const isHome  = ev.side === 'home'
@@ -131,10 +131,10 @@ function EventTimeline({ match }: { match: Detail }) {
               <span className="w-12 shrink-0 text-center font-mono text-[11px] text-slate-400">{minute}</span>
               <span className="text-base">{eventIcon(ev.type, ev.detail)}</span>
               <div className={`flex-1 ${isHome ? 'text-left' : 'text-right'}`}>
-                <span className="font-medium text-slate-900">{label}</span>
+                <span className="font-medium text-slate-100">{label}</span>
                 {assist && <span className="ml-1.5 text-xs text-slate-400">{assist}</span>}
               </div>
-              <span className={`w-14 shrink-0 text-[10px] font-semibold ${isHome ? 'text-blue-500' : 'text-right text-orange-400'}`}>
+              <span className={`w-14 shrink-0 text-[10px] font-semibold ${isHome ? 'text-blue-400' : 'text-right text-orange-400'}`}>
                 {isHome ? homeTeam.name : awayTeam.name}
               </span>
             </div>
@@ -154,7 +154,7 @@ function StatBar({ label, home, away }: { label: string; home: number; away: num
   const hp = total > 0 ? Math.round((home / total) * 100) : 50
   return (
     <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2 text-xs">
-      <span className="text-right tabular-nums font-semibold text-blue-600">{home}</span>
+      <span className="text-right tabular-nums font-semibold text-blue-400">{home}</span>
       <div className="space-y-0.5">
         <div className="relative h-1.5 overflow-hidden rounded-full bg-orange-100">
           <div style={{ width: `${hp}%` }} className="absolute inset-y-0 left-0 rounded-full bg-blue-400" />
@@ -170,8 +170,8 @@ function StatsPanel({ match }: { match: Detail }) {
   const s = match.stats
   if (!s) {
     return (
-      <section className="rounded-xl border border-dashed border-slate-200 bg-white p-5">
-        <h2 className="mb-1 text-sm font-semibold text-slate-900">Match statistics</h2>
+      <section className="rounded-xl border border-dashed border-surface-4 bg-surface-2 p-5">
+        <h2 className="mb-1 text-sm font-semibold text-slate-100">Match statistics</h2>
         <p className="text-xs text-slate-400">
           Live stats available during and shortly after the match. Requires APIFOOTBALL_API_KEY (see Admin).
         </p>
@@ -180,10 +180,10 @@ function StatsPanel({ match }: { match: Detail }) {
   }
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="mb-3 text-sm font-semibold text-slate-900">Match statistics</h2>
+    <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+      <h2 className="mb-3 text-sm font-semibold text-slate-100">Match statistics</h2>
       <div className="mb-3 flex justify-between text-[10px] font-semibold uppercase tracking-wide">
-        <span className="text-blue-500 max-w-24 truncate">{match.homeTeam.name}</span>
+        <span className="text-blue-400 max-w-24 truncate">{match.homeTeam.name}</span>
         <span className="text-slate-400">Stats</span>
         <span className="text-orange-400 max-w-24 truncate text-right">{match.awayTeam.name}</span>
       </div>
@@ -191,11 +191,11 @@ function StatsPanel({ match }: { match: Detail }) {
         {s.possession && (
           <div className="space-y-0.5">
             <div className="flex h-2.5 overflow-hidden rounded-full">
-              <div style={{ width: `${s.possession.home}%` }} className="bg-blue-500" />
+              <div style={{ width: `${s.possession.home}%` }} className="bg-blue-950/500" />
               <div style={{ width: `${s.possession.away}%` }} className="bg-orange-400" />
             </div>
             <div className="flex justify-between text-[10px] tabular-nums">
-              <span className="font-semibold text-blue-600">{s.possession.home}%</span>
+              <span className="font-semibold text-blue-400">{s.possession.home}%</span>
               <span className="text-slate-400">Possession</span>
               <span className="font-semibold text-orange-500">{s.possession.away}%</span>
             </div>
@@ -217,8 +217,8 @@ function StatsPanel({ match }: { match: Detail }) {
 
 function MetricRow({ label, home, away }: { label: string; home: string; away: string }) {
   return (
-    <tr className="border-b border-slate-50 text-xs text-slate-700">
-      <td className="py-1.5 pr-3 text-right tabular-nums font-semibold text-blue-600">{home}</td>
+    <tr className="border-b border-slate-50 text-xs text-slate-300">
+      <td className="py-1.5 pr-3 text-right tabular-nums font-semibold text-blue-400">{home}</td>
       <td className="py-1.5 px-3 text-center text-[10px] text-slate-400">{label}</td>
       <td className="py-1.5 pl-3 tabular-nums font-semibold text-orange-500">{away}</td>
     </tr>
@@ -236,14 +236,14 @@ function FormPanel({ homeTeam, awayTeam, homeDetail, awayDetail }: {
   const fmt = (n: number) => n.toFixed(2)
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="mb-3 text-sm font-semibold text-slate-900">
+    <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+      <h2 className="mb-3 text-sm font-semibold text-slate-100">
         Pre-match form <span className="font-normal text-slate-400">(last {Math.max(hf.sampleSize, af.sampleSize)} WC matches)</span>
       </h2>
 
       <div className="mb-3 grid grid-cols-2 gap-4 text-xs">
         <div>
-          <p className="mb-1 font-semibold text-blue-600">{homeTeam}</p>
+          <p className="mb-1 font-semibold text-blue-400">{homeTeam}</p>
           <FormBadges form={hf} n={5} />
           {hf.sampleSize === 0 && <p className="mt-1 text-slate-400">No finished matches yet</p>}
         </div>
@@ -370,7 +370,7 @@ export default function MatchDetailPage() {
       </div>
 
       {/* Match header */}
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="rounded-xl border border-surface-4 bg-surface-2 p-6 shadow-none">
         <p className="mb-3 text-center text-xs text-slate-400">
           {stageLabel(match.stage)}
           {match.groupName ? ` · ${match.groupName}` : ''}
@@ -378,37 +378,37 @@ export default function MatchDetailPage() {
         </p>
 
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-          <Link to={`/team/${match.homeTeam.id}`} className="text-right font-bold text-slate-900 hover:text-pitch-700 sm:text-lg">
+          <Link to={`/team/${match.homeTeam.id}`} className="text-right font-bold text-slate-100 hover:text-pitch-400 sm:text-lg">
             {match.homeTeam.name}
           </Link>
 
           <div className="flex flex-col items-center gap-1">
             {hasScore ? (
-              <span className={`text-3xl font-black tabular-nums ${isLive ? 'text-red-700' : 'text-slate-900'}`}>
+              <span className={`text-3xl font-black tabular-nums ${isLive ? 'text-red-400' : 'text-slate-100'}`}>
                 {match.homeScore} – {match.awayScore}
               </span>
             ) : (
               <span className="text-2xl font-bold text-slate-300">vs</span>
             )}
             {isLive && (
-              <span className="flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-700">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
+              <span className="flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-400">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-950/600" />
                 LIVE
               </span>
             )}
             {match.status === 'finished' && (
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-500">Final</span>
+              <span className="rounded-full bg-surface-3 px-2 py-0.5 text-[10px] text-slate-500">Final</span>
             )}
           </div>
 
-          <Link to={`/team/${match.awayTeam.id}`} className="font-bold text-slate-900 hover:text-pitch-700 sm:text-lg">
+          <Link to={`/team/${match.awayTeam.id}`} className="font-bold text-slate-100 hover:text-pitch-400 sm:text-lg">
             {match.awayTeam.name}
           </Link>
         </div>
 
         {/* Model probability */}
         {prediction && (
-          <div className="mt-5 border-t border-slate-100 pt-4">
+          <div className="mt-5 border-t border-surface-4/40 pt-4">
             <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-400">
               Model prediction · Poisson{prediction.actual_outcome ? ' · resolved' : ''}
             </p>
@@ -422,11 +422,11 @@ export default function MatchDetailPage() {
             {myBet && (
               <p className="mt-2 text-center text-xs text-slate-500">
                 Your prediction:{' '}
-                <span className="font-semibold text-slate-900">
+                <span className="font-semibold text-slate-100">
                   {myBet.predicted_home}–{myBet.predicted_away}
                 </span>
                 {myBet.points_awarded !== null && (
-                  <span className={`ml-2 font-semibold ${myBet.points_awarded >= 3 ? 'text-pitch-700' : myBet.points_awarded > 0 ? 'text-amber-700' : 'text-slate-400'}`}>
+                  <span className={`ml-2 font-semibold ${myBet.points_awarded >= 3 ? 'text-pitch-400' : myBet.points_awarded > 0 ? 'text-amber-400' : 'text-slate-400'}`}>
                     +{myBet.points_awarded} pt{myBet.points_awarded === 1 ? '' : 's'}
                   </span>
                 )}
@@ -437,14 +437,14 @@ export default function MatchDetailPage() {
       </section>
 
       {/* Squad lists */}
-      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-900">Squads</h2>
+          <h2 className="text-sm font-semibold text-slate-100">Squads</h2>
           <span className="text-[10px] text-slate-400">Click a name for analytics</span>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
-            <p className="mb-2 text-xs font-semibold text-blue-600">{match.homeTeam.name}</p>
+            <p className="mb-2 text-xs font-semibold text-blue-400">{match.homeTeam.name}</p>
             <SquadList players={homePlayers} color="blue" />
           </div>
           <div>

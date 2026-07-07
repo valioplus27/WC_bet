@@ -25,17 +25,17 @@ export function formatDateTime(iso: string): string {
 export function matchStatusBadge(status: string): { label: string; className: string } | null {
   switch (status) {
     case 'FINISHED':
-      return { label: 'Final', className: 'bg-slate-100 text-slate-600' }
+      return { label: 'Final', className: 'bg-surface-3 text-slate-400' }
     case 'IN_PLAY':
-      return { label: 'Live', className: 'bg-red-100 text-red-700' }
+      return { label: 'Live', className: 'bg-red-100 text-red-400' }
     case 'PAUSED':
-      return { label: 'HT', className: 'bg-amber-100 text-amber-700' }
+      return { label: 'HT', className: 'bg-amber-100 text-amber-400' }
     case 'POSTPONED':
-      return { label: 'Postponed', className: 'bg-amber-100 text-amber-700' }
+      return { label: 'Postponed', className: 'bg-amber-100 text-amber-400' }
     case 'SUSPENDED':
-      return { label: 'Suspended', className: 'bg-amber-100 text-amber-700' }
+      return { label: 'Suspended', className: 'bg-amber-100 text-amber-400' }
     case 'CANCELLED':
-      return { label: 'Cancelled', className: 'bg-slate-100 text-slate-400 line-through' }
+      return { label: 'Cancelled', className: 'bg-surface-3 text-slate-400 line-through' }
     default:
       return null
   }

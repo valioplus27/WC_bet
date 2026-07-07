@@ -47,7 +47,7 @@ export function PitchHeatmap({
 
   return (
     <div className="space-y-1">
-      {title && <p className="text-xs font-semibold text-slate-600">{title}</p>}
+      {title && <p className="text-xs font-semibold text-slate-400">{title}</p>}
       <svg
         viewBox={`0 0 ${SVG_W} ${SVG_H}`}
         className="w-full rounded-lg overflow-hidden"
@@ -168,7 +168,7 @@ export function PassMap({
 
   return (
     <div className="space-y-1">
-      {title && <p className="text-xs font-semibold text-slate-600">{title}</p>}
+      {title && <p className="text-xs font-semibold text-slate-400">{title}</p>}
       <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full rounded-lg overflow-hidden" style={{ background: '#2d6a2d' }}>
         <PitchLines />
 
@@ -214,7 +214,7 @@ export function PassMap({
       {n > 0 && (
         <div className="flex gap-4 text-[10px] text-slate-400">
           <span>{n} passes</span>
-          <span className="text-blue-500">█ forward</span>
+          <span className="text-blue-400">█ forward</span>
           <span className="text-orange-400">█ backward</span>
         </div>
       )}

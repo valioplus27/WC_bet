@@ -132,10 +132,10 @@ export function ShotMap({ shots, title }: Props) {
 
       {/* Stats row */}
       <div className="flex flex-wrap gap-4 text-xs">
-        <span className="text-slate-500"><span className="font-semibold text-slate-900">{shots.length}</span> shots</span>
-        <span className="text-slate-500"><span className="font-semibold text-pitch-700">{goals}</span> goals</span>
+        <span className="text-slate-500"><span className="font-semibold text-slate-100">{shots.length}</span> shots</span>
+        <span className="text-slate-500"><span className="font-semibold text-pitch-400">{goals}</span> goals</span>
         {totalXG > 0 && (
-          <span className="text-slate-500">xG <span className="font-semibold text-slate-900">{totalXG.toFixed(2)}</span></span>
+          <span className="text-slate-500">xG <span className="font-semibold text-slate-100">{totalXG.toFixed(2)}</span></span>
         )}
       </div>
 

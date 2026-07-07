@@ -51,7 +51,7 @@ export function LiveEventFeed({
   })
 
   return (
-    <div className="mt-3 border-t border-slate-100 pt-3">
+    <div className="mt-3 border-t border-surface-4/40 pt-3">
       <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
         Match events
       </p>
@@ -59,13 +59,13 @@ export function LiveEventFeed({
         {sorted.map((event) => {
           const isHome = event.team === homeTeam
           return (
-            <li key={event.id} className="flex items-baseline gap-1.5 text-xs text-slate-700">
+            <li key={event.id} className="flex items-baseline gap-1.5 text-xs text-slate-300">
               <span className="w-10 shrink-0 text-right font-mono text-[10px] text-slate-400">
                 {minuteLabel(event)}
               </span>
               <span>{eventIcon(event)}</span>
               <span className="flex-1 truncate">{eventLabel(event)}</span>
-              <span className={`shrink-0 text-[10px] font-semibold ${isHome ? 'text-blue-500' : 'text-orange-400'}`}>
+              <span className={`shrink-0 text-[10px] font-semibold ${isHome ? 'text-blue-400' : 'text-orange-400'}`}>
                 {isHome ? '🏠' : '✈️'}
               </span>
             </li>

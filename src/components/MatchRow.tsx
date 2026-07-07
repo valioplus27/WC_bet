@@ -6,7 +6,7 @@ import { formatKickoff } from '../lib/format'
 import type { Match } from '../lib/providers/types'
 
 function LiveDot() {
-  return <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
+  return <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-950/600" />
 }
 
 function StatusChip({ status }: { status: Match['status'] }) {
@@ -37,17 +37,17 @@ export function MatchRow({ match }: { match: Match }) {
   return (
     <Link
       to={`/match/${match.id}`}
-      className="group grid grid-cols-[1fr_5rem_1fr] items-center gap-2 rounded-lg border border-slate-100 bg-white px-3 py-2.5 shadow-sm transition hover:border-pitch-200 hover:shadow"
+      className="group grid grid-cols-[1fr_5rem_1fr] items-center gap-2 rounded-lg border border-surface-4/40 bg-surface-2 px-3 py-2.5 shadow-none transition hover:border-pitch-200 hover:shadow"
     >
       {/* Home */}
-      <span className="truncate text-right text-sm font-semibold text-slate-900 group-hover:text-pitch-700">
+      <span className="truncate text-right text-sm font-semibold text-slate-100 group-hover:text-pitch-400">
         {match.homeTeam.name}
       </span>
 
       {/* Score or kick-off time */}
       <div className="flex flex-col items-center text-center">
         {hasScore ? (
-          <span className={`text-base font-bold tabular-nums leading-none ${isLive ? 'text-red-700' : 'text-slate-900'}`}>
+          <span className={`text-base font-bold tabular-nums leading-none ${isLive ? 'text-red-400' : 'text-slate-100'}`}>
             {match.homeScore} – {match.awayScore}
           </span>
         ) : (
@@ -57,7 +57,7 @@ export function MatchRow({ match }: { match: Match }) {
       </div>
 
       {/* Away */}
-      <span className="truncate text-sm font-semibold text-slate-900 group-hover:text-pitch-700">
+      <span className="truncate text-sm font-semibold text-slate-100 group-hover:text-pitch-400">
         {match.awayTeam.name}
       </span>
     </Link>

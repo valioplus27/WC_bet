@@ -294,8 +294,8 @@ export function PassingNetworkViz({ metrics, title }: Props) {
 
 function Metric({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
-    <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-center">
-      <p className="text-base font-bold text-slate-900">{value}</p>
+    <div className="rounded-lg border border-surface-4/40 bg-surface-1 px-3 py-2 text-center">
+      <p className="text-base font-bold text-slate-100">{value}</p>
       <p className="text-[10px] uppercase tracking-wide text-slate-400">{label}</p>
       {note && <p className="mt-0.5 text-[9px] text-slate-300">{note}</p>}
     </div>

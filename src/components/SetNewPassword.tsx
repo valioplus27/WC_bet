@@ -81,15 +81,15 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-slate-900">⚽ WC 2026 Tulosveto</h1>
+          <h1 className="text-2xl font-bold text-slate-100">⚽ WC 2026 Tulosveto</h1>
           <p className="mt-1 text-sm text-slate-500">{copy.subtitle}</p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-surface-4 bg-surface-2 p-6 shadow-none">
           {status === 'saved' ? (
             <div className="space-y-3 text-center">
-              <p className="text-lg font-semibold text-slate-900">Password saved ✓</p>
-              <p className="text-sm text-slate-600">You can sign in with your email and this password any time from now on.</p>
+              <p className="text-lg font-semibold text-slate-100">Password saved ✓</p>
+              <p className="text-sm text-slate-400">You can sign in with your email and this password any time from now on.</p>
               {/*
                 Always safe to call: in "recovery" mode it's the only thing that
                 clears passwordRecovery (so it must be explicit); in "setup" mode
@@ -100,16 +100,16 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
               <button
                 type="button"
                 onClick={() => void handleContinue()}
-                className="w-full rounded-md bg-pitch-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pitch-700"
+                className="w-full rounded-md bg-pitch-600 px-4 py-2 text-sm font-semibold text-white shadow-none transition hover:bg-pitch-700"
               >
                 Continue to the app
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <p className="text-sm text-slate-600">{copy.intro}</p>
+              <p className="text-sm text-slate-400">{copy.intro}</p>
               <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700">
+                <label htmlFor="newPassword" className="block text-sm font-medium text-slate-300">
                   New password
                 </label>
                 <input
@@ -121,11 +121,11 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="At least 6 characters"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+                  className="mt-1 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
                 />
               </div>
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-300">
                   Confirm password
                 </label>
                 <input
@@ -137,18 +137,18 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                   placeholder="Type it again"
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+                  className="mt-1 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
                 />
               </div>
               {error && (
-                <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+                <p role="alert" className="rounded-md bg-red-950/60 px-3 py-2 text-sm text-red-400">
                   {error}
                 </p>
               )}
               <button
                 type="submit"
                 disabled={status === 'saving'}
-                className="w-full rounded-md bg-pitch-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pitch-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-md bg-pitch-600 px-4 py-2 text-sm font-semibold text-white shadow-none transition hover:bg-pitch-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {status === 'saving' ? 'Saving…' : 'Save password'}
               </button>
@@ -157,7 +157,7 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
                   <button
                     type="button"
                     onClick={dismissPasswordRecovery}
-                    className="font-medium text-slate-500 hover:text-slate-700 hover:underline"
+                    className="font-medium text-slate-500 hover:text-slate-300 hover:underline"
                   >
                     Skip for now
                   </button>
@@ -168,7 +168,7 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
                   <button
                     type="button"
                     onClick={() => void signOut()}
-                    className="font-medium text-slate-400 hover:text-slate-600 hover:underline"
+                    className="font-medium text-slate-400 hover:text-slate-400 hover:underline"
                   >
                     Sign out instead
                   </button>

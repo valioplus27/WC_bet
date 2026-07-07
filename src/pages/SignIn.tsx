@@ -11,11 +11,11 @@ export default function SignIn() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-slate-900">⚽ WC 2026 Tulosveto</h1>
+          <h1 className="text-2xl font-bold text-slate-100">⚽ WC 2026 Tulosveto</h1>
           <p className="mt-1 text-sm text-slate-500">Private score-betting for the World Cup</p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-surface-4 bg-surface-2 p-6 shadow-none">
           {mode === 'password' && (
             <PasswordSignInPanel onForgot={() => setMode('reset')} onFirstTime={() => setMode('magic-link')} />
           )}
@@ -35,7 +35,7 @@ export default function SignIn() {
 function FieldError({ message }: { message: string | null }) {
   if (!message) return null
   return (
-    <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+    <p role="alert" className="rounded-md bg-red-950/60 px-3 py-2 text-sm text-red-400">
       {message}
     </p>
   )
@@ -46,7 +46,7 @@ function SubmitButton({ pending, label, pendingLabel }: { pending: boolean; labe
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-md bg-pitch-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pitch-700 disabled:cursor-not-allowed disabled:opacity-60"
+      className="w-full rounded-md bg-pitch-600 px-4 py-2 text-sm font-semibold text-white shadow-none transition hover:bg-pitch-700 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -56,7 +56,7 @@ function SubmitButton({ pending, label, pendingLabel }: { pending: boolean; labe
 function EmailField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   return (
     <div>
-      <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+      <label htmlFor="email" className="block text-sm font-medium text-slate-300">
         Email
       </label>
       <input
@@ -67,7 +67,7 @@ function EmailField({ value, onChange }: { value: string; onChange: (value: stri
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="you@example.com"
-        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+        className="mt-1 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
       />
     </div>
   )
@@ -76,7 +76,7 @@ function EmailField({ value, onChange }: { value: string; onChange: (value: stri
 function DisplayNameField({ value, onChange, hint }: { value: string; onChange: (value: string) => void; hint: string }) {
   return (
     <div>
-      <label htmlFor="displayName" className="block text-sm font-medium text-slate-700">
+      <label htmlFor="displayName" className="block text-sm font-medium text-slate-300">
         Display name <span className="font-normal text-slate-400">({hint})</span>
       </label>
       <input
@@ -88,7 +88,7 @@ function DisplayNameField({ value, onChange, hint }: { value: string; onChange: 
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="What friends will see on the leaderboard"
-        className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+        className="mt-1 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
       />
     </div>
   )
@@ -96,7 +96,7 @@ function DisplayNameField({ value, onChange, hint }: { value: string; onChange: 
 
 function BackLink({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
-    <button type="button" onClick={onClick} className="text-sm font-medium text-pitch-700 hover:underline">
+    <button type="button" onClick={onClick} className="text-sm font-medium text-pitch-400 hover:underline">
       {children}
     </button>
   )
@@ -128,14 +128,14 @@ function PasswordSignInPanel({ onForgot, onFirstTime }: { onForgot: () => void; 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <p className="text-sm text-slate-600">Sign in with your email and password.</p>
+      <p className="text-sm text-slate-400">Sign in with your email and password.</p>
       <EmailField value={email} onChange={setEmail} />
       <div>
         <div className="flex items-center justify-between">
-          <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+          <label htmlFor="password" className="block text-sm font-medium text-slate-300">
             Password
           </label>
-          <button type="button" onClick={onForgot} className="text-xs font-medium text-pitch-700 hover:underline">
+          <button type="button" onClick={onForgot} className="text-xs font-medium text-pitch-400 hover:underline">
             Forgot password?
           </button>
         </div>
@@ -147,14 +147,14 @@ function PasswordSignInPanel({ onForgot, onFirstTime }: { onForgot: () => void; 
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           placeholder="Your password"
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+          className="mt-1 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
         />
       </div>
       <FieldError message={error} />
       <SubmitButton pending={status === 'submitting'} label="Sign in" pendingLabel="Signing in…" />
       <p className="text-center text-sm text-slate-500">
         First time here?{' '}
-        <button type="button" onClick={onFirstTime} className="font-medium text-pitch-700 hover:underline">
+        <button type="button" onClick={onFirstTime} className="font-medium text-pitch-400 hover:underline">
           Create an account
         </button>
       </p>
@@ -221,19 +221,19 @@ function MagicLinkPanel({ onBack, onForgotPassword }: { onBack: () => void; onFo
   if (status === 'registered') {
     return (
       <div className="space-y-3 text-center">
-        <p className="text-lg font-semibold text-slate-900">You've already got an account</p>
-        <p className="text-sm text-slate-600">
-          <span className="font-medium text-slate-900">{email}</span> already has one, so we didn't send another
+        <p className="text-lg font-semibold text-slate-100">You've already got an account</p>
+        <p className="text-sm text-slate-400">
+          <span className="font-medium text-slate-100">{email}</span> already has one, so we didn't send another
           sign-in link — magic links are only for creating new accounts. Sign in with your password instead.
         </p>
         <button
           type="button"
           onClick={onBack}
-          className="w-full rounded-md bg-pitch-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pitch-700"
+          className="w-full rounded-md bg-pitch-600 px-4 py-2 text-sm font-semibold text-white shadow-none transition hover:bg-pitch-700"
         >
           Sign in with password
         </button>
-        <button type="button" onClick={onForgotPassword} className="text-sm font-medium text-pitch-700 hover:underline">
+        <button type="button" onClick={onForgotPassword} className="text-sm font-medium text-pitch-400 hover:underline">
           Forgot it? Send a reset link
         </button>
       </div>
@@ -243,12 +243,12 @@ function MagicLinkPanel({ onBack, onForgotPassword }: { onBack: () => void; onFo
   if (status === 'sent') {
     return (
       <div className="space-y-3 text-center">
-        <p className="text-lg font-semibold text-slate-900">Check your email</p>
-        <p className="text-sm text-slate-600">
-          We sent an account creation link to <span className="font-medium text-slate-900">{email}</span>. Open it on
+        <p className="text-lg font-semibold text-slate-100">Check your email</p>
+        <p className="text-sm text-slate-400">
+          We sent an account creation link to <span className="font-medium text-slate-100">{email}</span>. Open it on
           this device to finish creating your account — then you'll choose a password.
         </p>
-        <button type="button" onClick={() => setStatus('idle')} className="text-sm font-medium text-pitch-700 hover:underline">
+        <button type="button" onClick={() => setStatus('idle')} className="text-sm font-medium text-pitch-400 hover:underline">
           Use a different email
         </button>
       </div>
@@ -257,7 +257,7 @@ function MagicLinkPanel({ onBack, onForgotPassword }: { onBack: () => void; onFo
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-slate-400">
         Fill in your details and we'll email you a one-time link to finish creating your account. Right after,
         you'll choose a password so every sign-in from then on is instant.
       </p>
@@ -309,9 +309,9 @@ function ResetPanel({ onBack }: { onBack: () => void }) {
   if (status === 'sent') {
     return (
       <div className="space-y-3 text-center">
-        <p className="text-lg font-semibold text-slate-900">Check your email</p>
-        <p className="text-sm text-slate-600">
-          If <span className="font-medium text-slate-900">{email}</span> has an account, we've sent a link to set (or
+        <p className="text-lg font-semibold text-slate-100">Check your email</p>
+        <p className="text-sm text-slate-400">
+          If <span className="font-medium text-slate-100">{email}</span> has an account, we've sent a link to set (or
           reset) its password. Open it on this device to continue.
         </p>
         <p className="text-sm">
@@ -323,7 +323,7 @@ function ResetPanel({ onBack }: { onBack: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-slate-400">
         Enter your email and we'll send a link to set a new password — whether you're recovering one you forgot, or
         never got to finish choosing one after signing up.
       </p>

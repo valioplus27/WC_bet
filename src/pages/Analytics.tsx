@@ -94,7 +94,7 @@ function TeamsTab({ teams }: { teams: TeamAnalytics[] }) {
   return (
     <div className="space-y-4">
       <p className="text-xs text-slate-500">
-        Tactical metrics from StatsBomb WC 2022 open data. Click a team to explore their squad, coach, and passing network.
+        Tactical metrics aggregated across StatsBomb open data: WC 2018, WC 2022, Euro 2020, Euro 2024, Copa América 2024. Matches in sample shown per card. Click a team to explore their squad, coach, and passing network.
       </p>
       <div className="flex flex-wrap items-center gap-3">
         <input
@@ -377,7 +377,7 @@ export default function Analytics() {
       <div>
         <h1 className="text-lg font-bold text-slate-100">Analytics</h1>
         <p className="text-sm text-slate-400">
-          Explore WC 2026 teams, players, and coaches. Team metrics are from StatsBomb WC 2022 open data.
+          Explore WC 2026 teams, players, and coaches. Team metrics aggregate WC 2018 · WC 2022 · Euro 2020 · Euro 2024 · Copa América 2024 (StatsBomb open data).
         </p>
       </div>
 

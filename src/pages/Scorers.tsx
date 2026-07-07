@@ -51,7 +51,7 @@ export default function Scorers() {
         {updatedAt && <p className="text-xs text-slate-400">Updated {updatedAt}</p>}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-surface-4 bg-surface-2 shadow-none">
+      <div className="overflow-hidden rounded-xl border border-surface-4/70 bg-surface-2 shadow-none">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-surface-4/40 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">

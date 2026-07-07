@@ -49,7 +49,7 @@ function FormCard({ form, title }: { form: FormWindow; title: string }) {
   const thinSample = sampleSize < windowSize
 
   return (
-    <div className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+    <div className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-100">{title}</h3>
         {thinSample && (
@@ -126,7 +126,7 @@ function SquadSection({ players, teamInfo }: { players: Player[]; teamInfo: Team
     .filter((g) => g.players.length > 0)
 
   return (
-    <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+    <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-sm font-semibold text-slate-100">Squad</h2>

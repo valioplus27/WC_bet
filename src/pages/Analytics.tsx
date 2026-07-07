@@ -126,7 +126,7 @@ function TeamsTab({ teams }: { teams: TeamAnalytics[] }) {
           <Link
             key={t.team_name}
             to={`/team/${slugify(t.team_name)}`}
-            className="group rounded-xl border border-surface-4 bg-surface-2 p-4 transition hover:border-pitch-600/50 hover:bg-surface-3"
+            className="group rounded-xl border border-surface-4/70 bg-surface-2 p-4 transition hover:border-pitch-600/50 hover:bg-surface-3"
           >
             <div className="mb-3 flex items-start justify-between gap-2">
               <p className="font-semibold text-slate-100 group-hover:text-pitch-400 transition">{t.team_name}</p>
@@ -304,7 +304,7 @@ function CoachesTab({ coaches }: { coaches: Coach[] }) {
           <Link
             key={c.id}
             to={`/team/${c.id}`}
-            className="group flex items-center gap-3 rounded-xl border border-surface-4 bg-surface-2 p-4 transition hover:border-pitch-600/50 hover:bg-surface-3"
+            className="group flex items-center gap-3 rounded-xl border border-surface-4/70 bg-surface-2 p-4 transition hover:border-pitch-600/50 hover:bg-surface-3"
           >
             {c.crest_url ? (
               <img src={c.crest_url} alt={c.name} className="h-10 w-10 rounded object-contain" />

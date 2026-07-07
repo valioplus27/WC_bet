@@ -56,7 +56,7 @@ export function FormBadges({ form, n }: { form: FormWindow; n: number }) {
   const cls: Record<string, string> = {
     W: 'bg-green-600 text-white',
     D: 'bg-amber-400 text-white',
-    L: 'bg-red-950/600 text-white',
+    L: 'bg-red-500 text-white',
   }
   return (
     <span className="flex items-center gap-0.5">

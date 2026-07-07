@@ -212,6 +212,7 @@ export default function PlayerPage() {
 
   const [events, setEvents] = useState<MatchEvent[]>([])
   const [shots, setShots] = useState<Shot[]>([])
+  const [squadInfo, setSquadInfo] = useState<{ team_id: string; position: string | null; shirt_number: number | null; nationality: string | null } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -230,9 +231,16 @@ export default function PlayerPage() {
         .select('id,team,x,y,xg,outcome,body_part,is_penalty,minute')
         .eq('player', playerName)
         .eq('source', 'statsbomb'),
-    ]).then(([evRes, shRes]) => {
+      // Also look up squad info (WC2026 roster from football-data.org)
+      supabase
+        .from('players')
+        .select('team_id,position,shirt_number,nationality')
+        .eq('name', playerName)
+        .maybeSingle(),
+    ]).then(([evRes, shRes, sqRes]) => {
       setEvents((evRes.data ?? []) as MatchEvent[])
       setShots((shRes.data ?? []) as Shot[])
+      setSquadInfo((sqRes as any).data ?? null)
       setLoading(false)
     })
   }, [playerName])
@@ -292,22 +300,42 @@ export default function PlayerPage() {
           <h1 className="text-2xl font-black text-slate-100">{playerName || 'Player'}</h1>
           {stats.team && <p className="mt-0.5 text-sm text-slate-500">{stats.team}</p>}
         </div>
-        <p className="mt-1 rounded-md bg-amber-950/50 px-3 py-1.5 text-xs text-amber-400 border border-amber-800 inline-block">
-          StatsBomb open data · WC 2022 historical — not WC 2026 live data
+        <p className="mt-1 rounded-md bg-surface-3 px-3 py-1.5 text-xs text-slate-400 border border-surface-4 inline-block">
+          Historical analytics from StatsBomb open data (WC 2018 · WC 2022 · Euro 2020/2024 · Copa 2024)
         </p>
       </div>
 
       {loading ? (
         <Spinner label="Loading analytics…" />
       ) : !hasData ? (
-        <div className="rounded-xl border border-dashed border-slate-600 bg-surface-2 px-6 py-12 text-center">
-          <p className="text-sm font-semibold text-slate-300">No data found for "{playerName}"</p>
-          <p className="mt-1 text-xs text-slate-400">
-            StatsBomb open data covers select WC 2022 matches. Try a different spelling.
-          </p>
-          <Link to="/standings" className="mt-4 inline-block text-xs text-pitch-400 hover:underline">
-            ← Back to standings
-          </Link>
+        <div className="rounded-xl border border-surface-4/70 bg-surface-2 px-6 py-8 space-y-4">
+          {squadInfo && (
+            <div className="rounded-lg bg-surface-3 px-4 py-3 space-y-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">WC 2026 Squad info</p>
+              <div className="flex flex-wrap gap-4 text-sm text-slate-200">
+                <span>{squadInfo.position ?? '—'}</span>
+                {squadInfo.shirt_number && <span>#{squadInfo.shirt_number}</span>}
+                {squadInfo.nationality && <span>{squadInfo.nationality}</span>}
+                {squadInfo.team_id && (
+                  <Link to={`/team/${squadInfo.team_id}`} className="text-pitch-400 hover:underline">
+                    View team →
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+          <div className="text-center">
+            <p className="text-sm font-semibold text-slate-300">No analytics data for "{playerName}"</p>
+            <p className="mt-2 text-xs text-slate-500 max-w-sm mx-auto">
+              Analytics coverage: players who appeared in WC 2018, WC 2022, Euro 2020, Euro 2024, or Copa América 2024 (StatsBomb open data).
+              {!squadInfo ? ' This player may not be in the squad database — try searching by full official name.' : ''}
+            </p>
+          </div>
+          <div className="text-center">
+            <Link to="/analytics" className="text-xs text-pitch-400 hover:underline">
+              ← Browse all players
+            </Link>
+          </div>
         </div>
       ) : (
         <>
@@ -333,7 +361,7 @@ export default function PlayerPage() {
 
           {/* Position heatmap */}
           {allPositions.length > 0 && (
-            <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+            <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
               <h2 className="mb-3 text-sm font-semibold text-slate-100">Position heatmap</h2>
               <p className="mb-3 text-xs text-slate-400">
                 All {allPositions.length} events plotted on pitch. Darker red = higher activity zone. Attacking left→right.
@@ -344,7 +372,7 @@ export default function PlayerPage() {
 
           {/* Passing network (ego) */}
           {playerNetwork && (
-            <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+            <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
               <h2 className="mb-3 text-sm font-semibold text-slate-100">Passing network</h2>
               <p className="mb-3 text-xs text-slate-400">
                 Who {playerName.split(' ').pop()} exchanged passes with. Yellow = the player. Blue lines = sent, orange = received. Thickness = frequency.
@@ -355,7 +383,7 @@ export default function PlayerPage() {
 
           {/* Pass map */}
           {passMoves.length > 0 && (
-            <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+            <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
               <h2 className="mb-3 text-sm font-semibold text-slate-100">Pass map</h2>
               <p className="mb-3 text-xs text-slate-400">
                 Yellow dot = average position. Blue arrows = forward passes; orange = backward. Thickness = frequency.
@@ -366,7 +394,7 @@ export default function PlayerPage() {
 
           {/* Pressure heatmap (defenders/midfielders) */}
           {pressurePositions.length > 20 && (
-            <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+            <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
               <h2 className="mb-3 text-sm font-semibold text-slate-100">Pressing heatmap</h2>
               <p className="mb-3 text-xs text-slate-400">
                 Where {playerName.split(' ').pop()} applied pressure on the ball — darker red = higher pressing zone.
@@ -377,7 +405,7 @@ export default function PlayerPage() {
 
           {/* Shot map */}
           {shots.length > 0 && (
-            <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+            <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
               <h2 className="mb-3 text-sm font-semibold text-slate-100">Shot locations</h2>
               <p className="mb-3 text-xs text-slate-400">
                 Shown from shooting perspective. Circle size = xG.
@@ -387,7 +415,7 @@ export default function PlayerPage() {
           )}
 
           {/* Event breakdown */}
-          <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+          <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
             <h2 className="mb-3 text-sm font-semibold text-slate-100">Event breakdown</h2>
             <EventBreakdown events={events} shots={shots} />
           </section>

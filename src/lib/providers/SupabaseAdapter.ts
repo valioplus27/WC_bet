@@ -40,11 +40,36 @@ const WC_2026: Competition = { id: 'WC2026', name: 'FIFA World Cup 2026', season
 // ---------------------------------------------------------------------------
 
 export function slugify(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')  // strip diacritics: ô→o, é→e, etc.
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+// Name-alias map: StatsBomb names → football-data.org WC2026 names.
+// When Analytics (StatsBomb source) links to /team/<slug>, the slug is built
+// from the StatsBomb name. This map lets deslugify find the WC2026 match name.
+const TEAM_ALIASES: Record<string, string> = {
+  'south-korea':  'Korea Republic',
+  'iran':         'IR Iran',
+  'ivory-coast':  'Côte d\'Ivoire',
+  'usa':          'United States',
+  'republic-of-korea': 'Korea Republic',
+  'north-macedonia': 'North Macedonia',
+  'czechia':      'Czech Republic',
 }
 
 export function deslugify(slug: string, allNames: string[]): string | null {
-  return allNames.find((n) => slugify(n) === slug) ?? null
+  // Direct slug match
+  const direct = allNames.find((n) => slugify(n) === slug)
+  if (direct) return direct
+  // Alias fallback (StatsBomb name → WC2026 name)
+  const aliased = TEAM_ALIASES[slug]
+  if (aliased && allNames.includes(aliased)) return aliased
+  // Loose partial match (last resort: slug prefix)
+  return allNames.find((n) => slugify(n).startsWith(slug.slice(0, 6))) ?? null
 }
 
 // ---------------------------------------------------------------------------

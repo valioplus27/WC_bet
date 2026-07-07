@@ -74,7 +74,7 @@ function MatchResultsSection() {
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Filter by team, group, or stage…"
           aria-label="Filter matches"
-          className="w-full max-w-xs rounded-md border border-slate-600 px-3 py-1.5 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+          className="w-full max-w-xs rounded-md border border-surface-4 px-3 py-1.5 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
         />
       </div>
       <p className="text-xs text-slate-400">
@@ -129,7 +129,7 @@ function AdminMatchRow({ match }: { match: Match }) {
   }
 
   return (
-    <li className="rounded-lg border border-surface-4 bg-surface-2 px-4 py-3 shadow-none">
+    <li className="rounded-lg border border-surface-4/70 bg-surface-2 px-4 py-3 shadow-none">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="text-sm">
           <p className="font-medium text-slate-100">
@@ -152,7 +152,7 @@ function AdminMatchRow({ match }: { match: Match }) {
             value={status}
             onChange={(event) => setStatus(event.target.value)}
             aria-label={`${match.home_team} v ${match.away_team} status`}
-            className="rounded-md border border-slate-600 px-2 py-2 text-xs shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+            className="rounded-md border border-surface-4 px-2 py-2 text-xs shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
           >
             {STATUS_OPTIONS.map((option) => (
               <option key={option} value={option}>
@@ -287,7 +287,7 @@ function TournamentConfigForm({ config, teams }: { config: TournamentConfig; tea
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+    <form onSubmit={handleSubmit} className="space-y-5 rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
       <div>
         <label htmlFor="lockAt" className="block text-sm font-semibold text-slate-100">
           Tournament-bet lock time
@@ -302,7 +302,7 @@ function TournamentConfigForm({ config, teams }: { config: TournamentConfig; tea
           required
           value={lockAt}
           onChange={(event) => setLockAt(event.target.value)}
-          className="mt-1.5 rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+          className="mt-1.5 rounded-md border border-surface-4 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
         />
       </div>
 
@@ -320,7 +320,7 @@ function TournamentConfigForm({ config, teams }: { config: TournamentConfig; tea
             required
             value={podiumPoints}
             onChange={(event) => setPodiumPoints(event.target.value)}
-            className="mt-1.5 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+            className="mt-1.5 w-full rounded-md border border-surface-4 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
           />
         </div>
         <div>
@@ -336,7 +336,7 @@ function TournamentConfigForm({ config, teams }: { config: TournamentConfig; tea
             required
             value={scorerPoints}
             onChange={(event) => setScorerPoints(event.target.value)}
-            className="mt-1.5 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+            className="mt-1.5 w-full rounded-md border border-surface-4 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
           />
         </div>
       </div>
@@ -361,7 +361,7 @@ function TournamentConfigForm({ config, teams }: { config: TournamentConfig; tea
             value={actualScorer}
             onChange={(event) => setActualScorer(event.target.value)}
             placeholder="Player's full name"
-            className="w-48 rounded-md border border-slate-600 px-2 py-1.5 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+            className="w-48 rounded-md border border-surface-4 px-2 py-1.5 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
           />
         </div>
       </fieldset>
@@ -396,7 +396,7 @@ function ResultSelect({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="w-48 rounded-md border border-slate-600 px-2 py-1.5 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+        className="w-48 rounded-md border border-surface-4 px-2 py-1.5 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
       >
         <option value="">— not yet known —</option>
         {options.map((team) => (

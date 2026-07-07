@@ -120,11 +120,11 @@ export default function TournamentBet() {
 function PointsLegend({ config }: { config: TournamentConfig }) {
   return (
     <dl className="grid grid-cols-2 gap-3 text-sm">
-      <div className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-2">
+      <div className="rounded-lg border border-surface-4/70 bg-surface-2 px-3 py-2">
         <dt className="text-slate-500">Per podium country, correct position</dt>
         <dd className="text-base font-semibold text-slate-100">{config.points_podium_correct_position} pts</dd>
       </div>
-      <div className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-2">
+      <div className="rounded-lg border border-surface-4/70 bg-surface-2 px-3 py-2">
         <dt className="text-slate-500">Correct top scorer</dt>
         <dd className="text-base font-semibold text-slate-100">{config.points_top_scorer} pts</dd>
       </div>
@@ -176,7 +176,7 @@ function TournamentBetForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold text-slate-100">Podium — pick the top 3 finishers</legend>
         <PodiumSelect label="🥇 1st place" value={first} options={teams} onChange={handleFirstChange} />
@@ -196,7 +196,7 @@ function TournamentBetForm({
           value={scorer}
           onChange={(event) => setScorer(event.target.value)}
           placeholder="Player's full name, e.g. Kylian Mbappé"
-          className="mt-1 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+          className="mt-1 w-full rounded-md border border-surface-4 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
         />
         <p className="mt-1 text-xs text-slate-400">Spelling/capitalization don't have to be perfect — matching ignores case and extra spaces.</p>
       </div>
@@ -226,7 +226,7 @@ function PodiumSelect({ label, value, options, onChange }: { label: string; valu
         required
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="w-48 rounded-md border border-slate-600 px-2 py-1.5 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+        className="w-48 rounded-md border border-surface-4 px-2 py-1.5 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
       >
         <option value="" disabled>
           Select a country…
@@ -253,7 +253,7 @@ function LockedView({ bet, config }: { bet: TournamentBetRow | null; config: Tou
   const resultsKnown = Boolean(config.actual_first && config.actual_second && config.actual_third && config.actual_top_scorer)
 
   return (
-    <div className="space-y-3 rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+    <div className="space-y-3 rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
       <PickRow label="🥇 1st place" pick={bet.pick_first} actual={config.actual_first} resultsKnown={resultsKnown} />
       <PickRow label="🥈 2nd place" pick={bet.pick_second} actual={config.actual_second} resultsKnown={resultsKnown} />
       <PickRow label="🥉 3rd place" pick={bet.pick_third} actual={config.actual_third} resultsKnown={resultsKnown} />

@@ -59,7 +59,7 @@ function DayNav({
           type="button"
           onClick={onPrev}
           aria-label="Previous day"
-          className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-1.5 text-sm font-medium text-slate-400 hover:border-slate-600 hover:bg-surface-1"
+          className="rounded-lg border border-surface-4/70 bg-surface-2 px-3 py-1.5 text-sm font-medium text-slate-400 hover:border-slate-600 hover:bg-surface-1"
         >
           ←
         </button>
@@ -75,7 +75,7 @@ function DayNav({
           type="button"
           onClick={onNext}
           aria-label="Next day"
-          className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-1.5 text-sm font-medium text-slate-400 hover:border-slate-600 hover:bg-surface-1"
+          className="rounded-lg border border-surface-4/70 bg-surface-2 px-3 py-1.5 text-sm font-medium text-slate-400 hover:border-slate-600 hover:bg-surface-1"
         >
           →
         </button>
@@ -84,7 +84,7 @@ function DayNav({
         type="date"
         value={date}
         onChange={(e) => { if (e.target.value) onDateChange(e.target.value) }}
-        className="block w-full rounded-lg border border-surface-4 bg-surface-2 px-3 py-2 text-sm text-slate-300 focus:border-pitch-500 focus:outline-none focus:ring-1 focus:ring-pitch-500"
+        className="block w-full rounded-lg border border-surface-4/70 bg-surface-2 px-3 py-2 text-sm text-slate-300 focus:border-pitch-500 focus:outline-none focus:ring-1 focus:ring-pitch-500"
       />
     </div>
   )

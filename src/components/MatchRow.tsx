@@ -6,7 +6,7 @@ import { formatKickoff } from '../lib/format'
 import type { Match } from '../lib/providers/types'
 
 function LiveDot() {
-  return <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-950/600" />
+  return <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
 }
 
 function StatusChip({ status }: { status: Match['status'] }) {

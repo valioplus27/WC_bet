@@ -194,10 +194,10 @@ export default function Leaderboard() {
           {sortBy === 'brier' ? 'Need at least 3 resolved predictions to rank by calibration.' : 'No players yet.'}
         </p>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-surface-4 bg-surface-2 shadow-none">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-surface-4/40 text-xs uppercase tracking-wide text-slate-400">
+        <div className="overflow-hidden rounded-xl border border-surface-4/70 bg-surface-2">
+          <table className="w-full text-sm bg-transparent">
+            <thead className="bg-surface-2">
+              <tr className="border-b border-surface-4 text-xs uppercase tracking-wide text-slate-500">
                 <th className="px-4 py-2 text-left font-medium">#</th>
                 <th className="px-2 py-2 text-left font-medium">Player</th>
                 {sortBy === 'points' ? (
@@ -247,19 +247,29 @@ function PlayerRow({
   const avgBrier = row.outcomePlayed > 0 ? row.brierSum / row.outcomePlayed : null
   const outcomePct = row.outcomePlayed > 0 ? Math.round((row.outcomeCorrect / row.outcomePlayed) * 100) : null
 
+  const rank = sortBy === 'points' ? row.rank : idx + 1
+  const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null
+
   return (
     <>
       <tr
         onClick={onToggle}
-        className={`cursor-pointer border-b border-surface-4/30 transition hover:bg-surface-3 ${isMe ? 'bg-pitch-600/10' : ''}`}
+        className={`cursor-pointer border-b border-surface-4/30 transition ${
+          isMe ? 'bg-pitch-600/15 hover:bg-pitch-600/20' : 'bg-surface-2 hover:bg-surface-3'
+        }`}
       >
-        <td className="px-4 py-2.5 font-semibold tabular-nums text-slate-400">
-          {sortBy === 'points' ? row.rank : idx + 1}
+        <td className="px-4 py-3 font-semibold tabular-nums">
+          {medal
+            ? <span className="text-base">{medal}</span>
+            : <span className="text-slate-500">{rank}</span>
+          }
         </td>
-        <td className="px-2 py-2.5 font-medium text-slate-100">
-          {row.profile.display_name}
+        <td className="px-2 py-3">
+          <span className={`font-semibold ${isMe ? 'text-pitch-300' : 'text-slate-100'}`}>
+            {row.profile.display_name}
+          </span>
           {isMe && (
-            <span className="ml-1.5 rounded-full bg-pitch-600/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-pitch-400">
+            <span className="ml-2 rounded-full bg-pitch-600/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-pitch-300">
               You
             </span>
           )}
@@ -294,8 +304,8 @@ function PlayerRow({
         )}
       </tr>
       {isOpen && (
-        <tr className="border-b border-surface-4/40 bg-surface-1/50">
-          <td colSpan={5} className="px-4 py-4">
+        <tr className="border-b border-surface-4/40 bg-surface-0">
+          <td colSpan={5} className="px-4 py-5">
             <PlayerBreakdown row={row} lockedMatches={lockedMatches} config={config} />
           </td>
         </tr>

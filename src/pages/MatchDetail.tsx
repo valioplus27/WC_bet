@@ -111,7 +111,7 @@ function EventTimeline({ match }: { match: Detail }) {
   if (events.length === 0) return null
 
   return (
-    <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+    <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
       <h2 className="mb-3 text-sm font-semibold text-slate-100">Match events</h2>
       <div className="relative space-y-0">
         {events.map((ev, i) => {
@@ -126,7 +126,7 @@ function EventTimeline({ match }: { match: Detail }) {
           return (
             <div
               key={i}
-              className={`flex items-center gap-3 border-b border-slate-50 py-2 text-sm last:border-0 ${isHome ? 'flex-row' : 'flex-row-reverse'}`}
+              className={`flex items-center gap-3 border-b border-surface-4/30 py-2 text-sm last:border-0 ${isHome ? 'flex-row' : 'flex-row-reverse'}`}
             >
               <span className="w-12 shrink-0 text-center font-mono text-[11px] text-slate-400">{minute}</span>
               <span className="text-base">{eventIcon(ev.type, ev.detail)}</span>
@@ -169,18 +169,18 @@ function StatBar({ label, home, away }: { label: string; home: number; away: num
 function StatsPanel({ match }: { match: Detail }) {
   const s = match.stats
   if (!s) {
+    // Only show this section when the match is live or recent — no stats yet is normal for scheduled matches
+    const isLiveOrRecent = match.status === 'live' || match.status === 'paused' || match.status === 'finished'
+    if (!isLiveOrRecent) return null
     return (
-      <section className="rounded-xl border border-dashed border-surface-4 bg-surface-2 p-5">
-        <h2 className="mb-1 text-sm font-semibold text-slate-100">Match statistics</h2>
-        <p className="text-xs text-slate-400">
-          Live stats available during and shortly after the match. Requires APIFOOTBALL_API_KEY (see Admin).
-        </p>
+      <section className="rounded-xl border border-dashed border-surface-4/50 bg-surface-2/50 px-4 py-3">
+        <p className="text-xs text-slate-500">Live stats will appear here once data is synced.</p>
       </section>
     )
   }
 
   return (
-    <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+    <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
       <h2 className="mb-3 text-sm font-semibold text-slate-100">Match statistics</h2>
       <div className="mb-3 flex justify-between text-[10px] font-semibold uppercase tracking-wide">
         <span className="text-blue-400 max-w-24 truncate">{match.homeTeam.name}</span>
@@ -191,7 +191,7 @@ function StatsPanel({ match }: { match: Detail }) {
         {s.possession && (
           <div className="space-y-0.5">
             <div className="flex h-2.5 overflow-hidden rounded-full">
-              <div style={{ width: `${s.possession.home}%` }} className="bg-blue-950/500" />
+              <div style={{ width: `${s.possession.home}%` }} className="bg-blue-500" />
               <div style={{ width: `${s.possession.away}%` }} className="bg-orange-400" />
             </div>
             <div className="flex justify-between text-[10px] tabular-nums">
@@ -217,7 +217,7 @@ function StatsPanel({ match }: { match: Detail }) {
 
 function MetricRow({ label, home, away }: { label: string; home: string; away: string }) {
   return (
-    <tr className="border-b border-slate-50 text-xs text-slate-300">
+    <tr className="border-b border-surface-4/30 text-xs text-slate-300">
       <td className="py-1.5 pr-3 text-right tabular-nums font-semibold text-blue-400">{home}</td>
       <td className="py-1.5 px-3 text-center text-[10px] text-slate-400">{label}</td>
       <td className="py-1.5 pl-3 tabular-nums font-semibold text-orange-500">{away}</td>
@@ -236,7 +236,7 @@ function FormPanel({ homeTeam, awayTeam, homeDetail, awayDetail }: {
   const fmt = (n: number) => n.toFixed(2)
 
   return (
-    <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+    <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
       <h2 className="mb-3 text-sm font-semibold text-slate-100">
         Pre-match form <span className="font-normal text-slate-400">(last {Math.max(hf.sampleSize, af.sampleSize)} WC matches)</span>
       </h2>
@@ -370,7 +370,7 @@ export default function MatchDetailPage() {
       </div>
 
       {/* Match header */}
-      <section className="rounded-xl border border-surface-4 bg-surface-2 p-6 shadow-none">
+      <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-6 shadow-none">
         <p className="mb-3 text-center text-xs text-slate-400">
           {stageLabel(match.stage)}
           {match.groupName ? ` · ${match.groupName}` : ''}
@@ -392,7 +392,7 @@ export default function MatchDetailPage() {
             )}
             {isLive && (
               <span className="flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-400">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-950/600" />
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
                 LIVE
               </span>
             )}
@@ -437,7 +437,7 @@ export default function MatchDetailPage() {
       </section>
 
       {/* Squad lists */}
-      <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+      <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-100">Squads</h2>
           <span className="text-[10px] text-slate-400">Click a name for analytics</span>

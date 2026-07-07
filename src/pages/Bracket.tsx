@@ -58,7 +58,7 @@ function ProbBar({
         <p className="text-[11px] text-slate-400">Coin flip — very evenly matched</p>
       )}
       <div className="flex h-2.5 overflow-hidden rounded-full">
-        <div style={{ width: `${hw}%` }} className="bg-blue-950/500" title={`${homeTeam} win ${hw}%`} />
+        <div style={{ width: `${hw}%` }} className="bg-blue-500" title={`${homeTeam} win ${hw}%`} />
         <div style={{ width: `${d}%`  }} className="bg-slate-300" title={`Draw ${d}%`} />
         <div style={{ width: `${aw}%` }} className="bg-orange-400" title={`${awayTeam} win ${aw}%`} />
       </div>
@@ -389,7 +389,7 @@ export default function Bracket() {
 
       {/* Monte Carlo tournament simulator */}
       {simResults.length > 0 && (
-        <section className="space-y-4 rounded-xl border border-surface-4 bg-surface-2 p-6 shadow-none">
+        <section className="space-y-4 rounded-xl border border-surface-4/70 bg-surface-2 p-6 shadow-none">
           <div>
             <h2 className="text-base font-semibold text-slate-100">🎲 Tournament simulator — 10,000 runs</h2>
             <p className="text-xs text-slate-500">
@@ -403,7 +403,7 @@ export default function Bracket() {
 
       {/* Model calibration card */}
       {predictions.length > 0 && (
-        <section className="space-y-4 rounded-xl border border-surface-4 bg-surface-2 p-6 shadow-none">
+        <section className="space-y-4 rounded-xl border border-surface-4/70 bg-surface-2 p-6 shadow-none">
           <div>
             <h2 className="text-base font-semibold text-slate-100">How accurate is the model?</h2>
             <p className="text-xs text-slate-500">

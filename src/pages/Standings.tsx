@@ -158,7 +158,7 @@ function compareStandingRows(a: Standing, b: Standing): number {
 
 function GroupTable({ groupName, rows }: { groupName: string; rows: Standing[] }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-surface-4 bg-surface-2 shadow-none">
+    <div className="overflow-hidden rounded-xl border border-surface-4/70 bg-surface-2 shadow-none">
       <h3 className="border-b border-surface-4/40 bg-surface-1 px-4 py-2 text-sm font-semibold text-slate-100">
         Group {groupName}
       </h3>
@@ -182,7 +182,7 @@ function GroupTable({ groupName, rows }: { groupName: string; rows: Standing[] }
             {rows.map((row, index) => {
               const pos = row.position ?? index + 1
               return (
-                <tr key={row.id} className={`border-b border-slate-50 last:border-0 ${qualificationStyle(pos)}`}>
+                <tr key={row.id} className={`border-b border-surface-4/30 last:border-0 ${qualificationStyle(pos)}`}>
                   <td className="px-3 py-1.5 text-xs tabular-nums text-slate-400">
                     {pos}
                     {qualificationBadge(pos)}
@@ -226,13 +226,13 @@ function BracketMatch({ match }: { match: Match }) {
   return (
     <Link
       to={`/match/${match.id}`}
-      className="block rounded-lg border border-surface-4 bg-surface-2 px-4 py-3 shadow-none hover:border-slate-600 hover:shadow transition-all"
+      className="block rounded-lg border border-surface-4/70 bg-surface-2 px-4 py-3 shadow-none hover:border-slate-600 hover:shadow transition-all"
     >
       <div className="mb-2 flex items-center justify-between text-xs text-slate-400">
         <time dateTime={match.kickoff_at}>{formatKickoff(match.kickoff_at)}</time>
         {badge && (
           <span className={`flex items-center gap-1 rounded-full px-1.5 py-0.5 font-medium ${badge.className}`}>
-            {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-950/600" />}
+            {isLive && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />}
             {badge.label}
           </span>
         )}

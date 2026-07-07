@@ -24,7 +24,7 @@ export function ProbabilityBar({
   return (
     <div className="space-y-1">
       <div className={`flex overflow-hidden rounded-full ${h}`}>
-        <div style={{ width: `${hw}%` }} className="bg-blue-950/500" />
+        <div style={{ width: `${hw}%` }} className="bg-blue-500" />
         <div style={{ width: `${d}%`  }} className="bg-slate-300" />
         <div style={{ width: `${aw}%` }} className="bg-orange-400" />
       </div>

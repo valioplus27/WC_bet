@@ -346,7 +346,7 @@ export default function Stats() {
           <p className="text-xs text-slate-400">Based on each player's betting style across all predictions.</p>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {playerStats.map(({ profile, personality, played, exact, outcome, totalBets }) => (
-              <div key={profile.id} className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
+              <div key={profile.id} className="rounded-xl border border-surface-4/70 bg-surface-2 p-4 shadow-none">
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-semibold text-slate-100">{profile.display_name}</p>
                   <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${personality.bg} ${personality.text}`}>
@@ -383,7 +383,7 @@ export default function Stats() {
       {playerStats.some((s) => s.played > 0) && (
         <section className="space-y-3">
           <h2 className="text-base font-semibold text-slate-100">Accuracy Breakdown</h2>
-          <div className="overflow-x-auto rounded-xl border border-surface-4 bg-surface-2 shadow-none">
+          <div className="overflow-x-auto rounded-xl border border-surface-4/70 bg-surface-2 shadow-none">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-surface-4/40 text-left text-xs font-semibold uppercase tracking-wide text-slate-400">
@@ -436,7 +436,7 @@ export default function Stats() {
               const drawPct = total > 0 ? Math.round((drawCount / total) * 100) : 0
               const awayPct = 100 - homePct - drawPct
               return (
-                <div key={match.id} className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
+                <div key={match.id} className="rounded-xl border border-surface-4/70 bg-surface-2 p-4 shadow-none">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <p className="font-semibold text-slate-100">
@@ -469,7 +469,7 @@ export default function Stats() {
           <h2 className="text-base font-semibold text-slate-100">Fun Facts</h2>
           <ul className="space-y-2">
             {funFacts.map((fact, i) => (
-              <li key={i} className="flex items-start gap-3 rounded-lg border border-surface-4 bg-surface-2 p-4 text-sm text-slate-300 shadow-none">
+              <li key={i} className="flex items-start gap-3 rounded-lg border border-surface-4/70 bg-surface-2 p-4 text-sm text-slate-300 shadow-none">
                 <span className="text-xl leading-none">{fact.icon}</span>
                 {fact.text}
               </li>
@@ -499,7 +499,7 @@ export default function Stats() {
               <p className="text-xs text-slate-400">Auto-generated from the numbers. Results may be unfair to your team.</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {tacticalTakeaways.map((t, i) => (
-                  <div key={i} className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
+                  <div key={i} className="rounded-xl border border-surface-4/70 bg-surface-2 p-4 shadow-none">
                     <div className="mb-2 text-2xl">{t.icon}</div>
                     <p className="text-sm text-slate-300 leading-relaxed">{t.text}</p>
                   </div>
@@ -517,7 +517,7 @@ export default function Stats() {
               </div>
               <span className="text-[10px] text-slate-400">{teamAnalytics[0]?.matches_in_sample ?? '?'} matches/team avg</span>
             </div>
-            <div className="overflow-x-auto rounded-xl border border-surface-4 bg-surface-2 shadow-none">
+            <div className="overflow-x-auto rounded-xl border border-surface-4/70 bg-surface-2 shadow-none">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-surface-4/40 text-left text-[10px] font-semibold uppercase tracking-wide text-slate-400">

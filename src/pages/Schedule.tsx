@@ -364,17 +364,17 @@ function ScoringLegend() {
         the most points; get the winner (or draw) right and you still bank something even when the score's off.
       </p>
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-2">
+        <div className="rounded-lg border border-surface-4/70 bg-surface-2 px-3 py-2">
           <dt className="text-slate-500">Exact score</dt>
           <dd className="text-base font-semibold text-pitch-400">3 pts</dd>
         </div>
-        <div className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-2">
+        <div className="rounded-lg border border-surface-4/70 bg-surface-2 px-3 py-2">
           <dt className="text-slate-500">
             Right outcome <span className="font-normal text-slate-400">— win, draw or loss</span>
           </dt>
           <dd className="text-base font-semibold text-amber-400">1 pt</dd>
         </div>
-        <div className="rounded-lg border border-surface-4 bg-surface-2 px-3 py-2">
+        <div className="rounded-lg border border-surface-4/70 bg-surface-2 px-3 py-2">
           <dt className="text-slate-500">Wrong outcome</dt>
           <dd className="text-base font-semibold text-slate-400">0 pts</dd>
         </div>

@@ -8,7 +8,7 @@ function PossessionBar({ home, away }: { home: number | null; away: number | nul
   return (
     <div className="space-y-0.5">
       <div className="flex h-2 overflow-hidden rounded-full">
-        <div style={{ width: `${h}%` }} className="bg-blue-950/500" />
+        <div style={{ width: `${h}%` }} className="bg-blue-500" />
         <div style={{ width: `${a}%` }} className="bg-orange-400" />
       </div>
       <div className="flex justify-between text-[10px] tabular-nums">

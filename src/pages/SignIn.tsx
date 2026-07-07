@@ -15,7 +15,7 @@ export default function SignIn() {
           <p className="mt-1 text-sm text-slate-500">Private score-betting for the World Cup</p>
         </div>
 
-        <div className="rounded-xl border border-surface-4 bg-surface-2 p-6 shadow-none">
+        <div className="rounded-xl border border-surface-4/70 bg-surface-2 p-6 shadow-none">
           {mode === 'password' && (
             <PasswordSignInPanel onForgot={() => setMode('reset')} onFirstTime={() => setMode('magic-link')} />
           )}
@@ -67,7 +67,7 @@ function EmailField({ value, onChange }: { value: string; onChange: (value: stri
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="you@example.com"
-        className="mt-1 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+        className="mt-1 w-full rounded-md border border-surface-4 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
       />
     </div>
   )
@@ -88,7 +88,7 @@ function DisplayNameField({ value, onChange, hint }: { value: string; onChange: 
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="What friends will see on the leaderboard"
-        className="mt-1 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+        className="mt-1 w-full rounded-md border border-surface-4 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
       />
     </div>
   )
@@ -147,7 +147,7 @@ function PasswordSignInPanel({ onForgot, onFirstTime }: { onForgot: () => void; 
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           placeholder="Your password"
-          className="mt-1 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+          className="mt-1 w-full rounded-md border border-surface-4 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
         />
       </div>
       <FieldError message={error} />

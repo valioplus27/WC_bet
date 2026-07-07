@@ -38,7 +38,7 @@ export function ScoreInput({
         if (next === '' || /^\d{0,2}$/.test(next)) onChange(next)
       }}
       placeholder="–"
-      className="h-10 w-12 rounded-md border border-slate-600 text-center text-lg font-semibold tabular-nums shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+      className="h-10 w-12 rounded-md border border-surface-4 text-center text-lg font-semibold tabular-nums shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
     />
   )
 }
@@ -165,7 +165,7 @@ function ModelProbBar({ pred, homeTeam, awayTeam }: { pred: Prediction; homeTeam
         <p className="text-[11px] font-semibold text-slate-400">{label}</p>
       </div>
       <div className="flex h-2 overflow-hidden rounded-full">
-        <div style={{ width: `${hw}%` }} className="bg-blue-950/500" title={`${homeTeam} ${hw}%`} />
+        <div style={{ width: `${hw}%` }} className="bg-blue-500" title={`${homeTeam} ${hw}%`} />
         <div style={{ width: `${d}%` }} className="bg-slate-200" title={`Draw ${d}%`} />
         <div style={{ width: `${aw}%` }} className="bg-orange-400" title={`${awayTeam} ${aw}%`} />
       </div>
@@ -222,7 +222,7 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
   }
 
   return (
-    <article className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
+    <article className="rounded-xl border border-surface-4/70 bg-surface-2 p-4 shadow-none">
       <header className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
         <span>
           {stageLabel(match.stage)}
@@ -231,7 +231,7 @@ export function MatchCard({ match, myBet, onSave, profiles, allBetsForMatch, rea
         <div className="flex items-center gap-2">
           {match.status === 'IN_PLAY' ? (
             <span className="flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-red-400">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-950/600" />
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-red-500" />
               Live
             </span>
           ) : badge ? (

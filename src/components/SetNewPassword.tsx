@@ -85,7 +85,7 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
           <p className="mt-1 text-sm text-slate-500">{copy.subtitle}</p>
         </div>
 
-        <div className="rounded-xl border border-surface-4 bg-surface-2 p-6 shadow-none">
+        <div className="rounded-xl border border-surface-4/70 bg-surface-2 p-6 shadow-none">
           {status === 'saved' ? (
             <div className="space-y-3 text-center">
               <p className="text-lg font-semibold text-slate-100">Password saved ✓</p>
@@ -121,7 +121,7 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="At least 6 characters"
-                  className="mt-1 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+                  className="mt-1 w-full rounded-md border border-surface-4 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
                 />
               </div>
               <div>
@@ -137,7 +137,7 @@ export function SetNewPassword({ mode }: { mode: Mode }) {
                   value={confirmPassword}
                   onChange={(event) => setConfirmPassword(event.target.value)}
                   placeholder="Type it again"
-                  className="mt-1 w-full rounded-md border border-slate-600 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-600"
+                  className="mt-1 w-full rounded-md border border-surface-4 px-3 py-2 text-sm shadow-none focus:border-pitch-600 focus:outline-none focus:ring-1 focus:ring-pitch-500/50"
                 />
               </div>
               {error && (

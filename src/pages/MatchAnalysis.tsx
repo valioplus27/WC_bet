@@ -39,7 +39,7 @@ function XGBar({ homeXG, awayXG, homeTeam, awayTeam }: {
         <span>{awayTeam}</span>
       </div>
       <div className="flex h-3 overflow-hidden rounded-full text-[10px] font-bold text-white">
-        <div style={{ width: `${homePct}%` }} className="flex items-center justify-center bg-blue-950/500">
+        <div style={{ width: `${homePct}%` }} className="flex items-center justify-center bg-blue-500">
           {homePct > 20 ? `${homeXG.toFixed(2)}` : ''}
         </div>
         <div style={{ width: `${awayPct}%` }} className="flex items-center justify-center bg-orange-400">
@@ -145,7 +145,7 @@ export default function MatchAnalysis() {
       </div>
 
       {/* xG bar */}
-      <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+      <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
         <h2 className="mb-3 text-sm font-semibold text-slate-100">Expected goals (xG)</h2>
         <XGBar homeXG={homeXG} awayXG={awayXG} homeTeam={homeTeam} awayTeam={awayTeam} />
         <p className="mt-3 text-xs text-slate-400">
@@ -157,10 +157,10 @@ export default function MatchAnalysis() {
       <section className="space-y-6">
         <h2 className="text-sm font-semibold text-slate-100">Shot maps — attacking half</h2>
         <div className="grid gap-6 sm:grid-cols-2">
-          <div className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
+          <div className="rounded-xl border border-surface-4/70 bg-surface-2 p-4 shadow-none">
             <ShotMap shots={homeShots} title={homeTeam} />
           </div>
-          <div className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
+          <div className="rounded-xl border border-surface-4/70 bg-surface-2 p-4 shadow-none">
             <ShotMap shots={awayShots} title={awayTeam} />
           </div>
         </div>
@@ -178,12 +178,12 @@ export default function MatchAnalysis() {
           </div>
           <div className="grid gap-6 sm:grid-cols-2">
             {homeNetwork && (
-              <div className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
+              <div className="rounded-xl border border-surface-4/70 bg-surface-2 p-4 shadow-none">
                 <PassingNetworkViz metrics={homeNetwork} title={homeTeam} />
               </div>
             )}
             {awayNetwork && (
-              <div className="rounded-xl border border-surface-4 bg-surface-2 p-4 shadow-none">
+              <div className="rounded-xl border border-surface-4/70 bg-surface-2 p-4 shadow-none">
                 <PassingNetworkViz metrics={awayNetwork} title={awayTeam} />
               </div>
             )}
@@ -193,7 +193,7 @@ export default function MatchAnalysis() {
 
       {/* Tactical fingerprint comparison */}
       {homeNetwork && awayNetwork && (
-        <section className="rounded-xl border border-surface-4 bg-surface-2 p-5 shadow-none">
+        <section className="rounded-xl border border-surface-4/70 bg-surface-2 p-5 shadow-none">
           <h2 className="mb-3 text-sm font-semibold text-slate-100">Tactical fingerprint</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
